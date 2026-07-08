@@ -1,14 +1,15 @@
 from telegram_bot import send_message
+from news import get_latest_news
 
-message = """
-🤖 AI News Bot
+news = get_latest_news()
 
-Hello Harish!
+message = "🤖 AI Daily Digest\n\n"
 
-Project structure is now modular.
-"""
+for item in news:
+    message += (
+        f"📰 {item['source']}\n"
+        f"{item['title']}\n"
+        f"{item['link']}\n\n"
+    )
 
-if send_message(message):
-    print("Message sent!")
-else:
-    print("Failed.")
+send_message(message)
