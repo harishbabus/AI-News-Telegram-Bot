@@ -2,3 +2,5 @@
 requests
 #pip install feedparser
 feedparser
+# pip install python-dotenv
+python-dotenv

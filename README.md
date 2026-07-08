@@ -1,9 +1,27 @@
-# AI-News-Telegram-Bot
-To build a personal AI Update Telegram Bot that filters updates into categories like
-🚀 New AI tools
-💻 AI coding assistants
-📄 Research papers
-🎥 Best YouTube videos
-💼 AI jobs
-📚 Free courses
-and delivers a clean summary to your Telegram every morning.
+# AI News Telegram Bot
+
+A Python application that fetches AI news from multiple RSS feeds and sends a daily digest to Telegram.
+
+## Features
+
+- Multiple RSS feeds
+- Duplicate removal
+- Telegram notifications
+- Modular architecture
+- Logging
+- Automatic scheduling (coming soon)
+
+## Tech Stack
+
+- Python
+- feedparser
+- Requests
+- Telegram Bot API
+- GitHub Actions
+
+## Future Improvements
+
+- AI summaries
+- Trending GitHub projects
+- AI tool discovery
+- Daily scheduling
