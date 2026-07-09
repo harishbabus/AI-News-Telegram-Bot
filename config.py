@@ -6,6 +6,9 @@ load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
+AI_PROVIDER = os.getenv("AI_PROVIDER", "gemini").lower()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+GEMINI_API_KEY=  os.getenv("GEMINI_API_KEY")
 
 if not BOT_TOKEN or not CHAT_ID:
     raise ValueError(

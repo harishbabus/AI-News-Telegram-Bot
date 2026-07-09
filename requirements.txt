@@ -4,3 +4,7 @@ requests
 feedparser
 # pip install python-dotenv
 python-dotenv
+# pip install openai
+openai
+# pip install google-genai
+google-genai
