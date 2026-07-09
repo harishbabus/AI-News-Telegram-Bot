@@ -1,8 +1,12 @@
 name: AI Daily Digest
 
 on:
+  #schedule:
+  #  - cron: '30 1 * * *'   # 07:00 IST
+
   schedule:
-    - cron: '30 1 * * *'   # 07:00 IST
+  - cron: '*/5 * * * *'
+
   workflow_dispatch:
 
 jobs:
