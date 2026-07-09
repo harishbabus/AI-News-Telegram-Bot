@@ -23,6 +23,7 @@ def get_latest_news(limit_per_source=3):
                 news.append({
                     "source": source_name,
                     "title": entry.title,
+                    "summary": getattr(entry, "summary", ""),
                     "link": entry.link
                 })
 
