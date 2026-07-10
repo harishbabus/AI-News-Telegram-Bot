@@ -1,8 +1,10 @@
 #!/bin/bash
 
-echo "Starting deployment..."
+set -e
 
-cd ~/projects/AI-News-Telegram-Bot
+echo "===== Deployment started: $(date) ====="
+
+cd /home/ubuntu/projects/AI-News-Telegram-Bot
 
 git pull origin main
 
@@ -10,4 +12,4 @@ source .venv/bin/activate
 
 pip install -r requirements.txt
 
-echo "Deployment complete."
+echo "===== Deployment completed ====="
