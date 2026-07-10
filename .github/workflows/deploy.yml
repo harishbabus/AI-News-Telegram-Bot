@@ -18,4 +18,4 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             cd /home/ubuntu/projects/AI-News-Telegram-Bot
-            ./scripts/deploy.sh
+            bash scripts/deploy.sh
