@@ -27,4 +27,4 @@ A Python application that fetches AI news from multiple RSS feeds and sends a da
 - Daily scheduling
 - On Demand scheduling
 - Automatic Deployment
-- Lets Test again
+- Lets Test once more
