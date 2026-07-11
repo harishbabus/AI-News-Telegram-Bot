@@ -1,15 +1,30 @@
+# Why this project?
+AI news is published across many websites every day. Keeping up with the latest developments requires visiting multiple sources. This project automates the process by aggregating trusted RSS feeds, using Large Language Models (Gemini/OpenAI) to produce concise summaries, and delivering a daily digest directly to Telegram.
+
 # AI News Telegram Bot
 
-A Python application that fetches AI news from multiple RSS feeds and sends a daily digest to Telegram.
+An AI-powered Telegram bot that collects the latest AI news from trusted RSS feeds, summarizes it using Gemini or OpenAI, and delivers a concise daily digest to Telegram.
+
+---
 
 ## Features
 
-- Multiple RSS feeds
-- Duplicate removal
-- Telegram notifications
+- RSS news aggregation
+- AI-powered summarization
+- Gemini & OpenAI support
+- Telegram integration
+- Oracle Cloud deployment
+- GitHub Actions CI/CD
+- Daily scheduled execution
 - Modular architecture
-- Logging
-- Automatic scheduling (coming soon)
+
+---
+
+## Architecture
+
+(Architecture diagram)
+
+---
 
 ## Tech Stack
 
@@ -19,12 +34,76 @@ A Python application that fetches AI news from multiple RSS feeds and sends a da
 - Telegram Bot API
 - GitHub Actions
 
-## Future Improvements
+## Project Structure
 
-- AI summaries
-- Trending GitHub projects
-- AI tool discovery
-- Daily scheduling
-- On Demand scheduling
-- Automatic Deployment
-- Lets Test once more
+(tree)
+
+---
+
+## Installation
+
+...
+
+---
+
+## Configuration
+
+...
+
+---
+
+## Running Locally
+
+...
+
+---
+
+## Deployment
+
+...
+
+---
+
+## CI/CD
+
+...
+
+---
+
+## Roadmap
+
+...
+
+---
+
+## License
+
+
+
+## Folder Structure
+
+AI-News-Telegram-Bot/
+│
+├── app/
+├── common/
+├── news/
+├── providers/
+├── prompts/
+├── services/
+├── telegram/
+├── scripts/
+├── docs/
+├── tests/
+└── logs/
+
+# Future Roadmap
+
+- Slack notifications
+- Discord integration
+- Email digest
+- Duplicate article detection
+- News categorization
+- Web dashboard
+- Historical archive
+- Docker support
+- Unit tests
