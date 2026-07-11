@@ -1,7 +1,19 @@
 #!/bin/bash
+set -e
 
-cd ~/projects/AI-News-Telegram-Bot
+PROJECT_DIR="/home/ubuntu/projects/AI-News-Telegram-Bot"
+LOG_FILE="$PROJECT_DIR/logs/cron.log"
+
+mkdir -p "$PROJECT_DIR/logs"
+
+exec >> "$LOG_FILE" 2>&1
+
+echo "===== Started $(date) ====="
+
+cd "$PROJECT_DIR"
 
 source .venv/bin/activate
 
-python3 main.py >> logs/bot.log 2>&1
+python3 main.py
+
+echo "===== Finished $(date) ====="
