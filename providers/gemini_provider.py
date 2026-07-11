@@ -1,6 +1,6 @@
 from google import genai
 
-from config import GEMINI_API_KEY
+from app.config import GEMINI_API_KEY
 from providers.base_provider import AIProvider
 from prompts.news_summary_prompt import build_news_prompt
 

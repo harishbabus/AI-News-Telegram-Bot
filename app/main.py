@@ -1,10 +1,12 @@
 import logging
 
-from news import get_latest_news
-from utils import remove_duplicates
-from formatter import create_digest, split_message
-from telegram_bot import send_message
-from summarizer import summarize_news
+from news.fetcher import get_latest_news
+from news.formatter import create_digest, split_message
+
+from common.utils import remove_duplicates
+
+from telegram.bot import send_message
+from services.summarizer import summarize_news
 
 logging.basicConfig(
     filename="logs/bot.log",

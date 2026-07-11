@@ -1,6 +1,6 @@
 import feedparser
-from sources import RSS_SOURCES
-from logger import logger
+from news.sources import RSS_SOURCES
+from common.logger import logger
 
 
 def get_latest_news(limit_per_source=3):

@@ -1,4 +1,4 @@
-from config import AI_PROVIDER
+from app.config import AI_PROVIDER
 
 from providers.openai_provider import OpenAIProvider
 from providers.gemini_provider import GeminiProvider
