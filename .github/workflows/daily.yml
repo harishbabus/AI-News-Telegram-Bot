@@ -31,4 +31,4 @@ jobs:
           AI_PROVIDER: ${{ secrets.AI_PROVIDER }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: python main.py
+        run: python3 -m app.main
