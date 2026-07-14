@@ -1,48 +1,66 @@
-def build_news_prompt(news):
+from typing import Any
 
-    articles = ""
+
+def build_news_prompt(news: list[dict[str, Any]]) -> str:
+    """
+    Builds the prompt used by the LLM to generate the AI Daily Brief.
+
+    Args:
+        news: List of news article dictionaries. Each article should contain:
+            - source
+            - title
+            - summary
+            - link
+
+    Returns:
+        A formatted prompt string ready to be sent to the LLM.
+    """
+
+    article_sections = []
 
     for index, article in enumerate(news, start=1):
-
-        articles += f"""
+        article_sections.append(
+            f"""
 ==============================
 Article {index}
 
 Source:
-{article['source']}
+{article.get("source", "Unknown")}
 
 Title:
-{article['title']}
+{article.get("title", "Untitled")}
 
 Summary:
-{article.get('summary', 'No summary available')}
+{article.get("summary", "No summary available.")}
 
 Link:
-{article['link']}
-"""
+{article.get("link", "N/A")}
+""".strip()
+        )
 
-    prompt = f"""
-You are an expert AI News Editor.
+    articles = "\n\n".join(article_sections)
 
-You will receive AI news articles collected from multiple trusted sources.
+    return f"""
+You are an experienced AI News Editor responsible for creating a concise, accurate, and engaging daily AI news briefing for technology professionals.
 
-Each article contains:
-- Source
-- Title
-- Summary
-- Link
+## Objective
 
-Your responsibilities:
+Analyze the provided news articles and produce a high-quality daily AI news summary.
+
+## Instructions
 
 1. Read every article carefully.
-2. Ignore duplicate stories.
-3. Merge related news together.
-4. Identify the biggest news of the day.
-5. Mention important AI tools released.
-6. Mention significant research papers.
+2. Remove duplicate stories.
+3. Merge articles covering the same event.
+4. Identify the single most important AI story of the day.
+5. Highlight newly released AI tools, products, or features.
+6. Highlight significant AI research papers or breakthroughs.
 7. Explain why today's news matters.
+8. Use only information contained in the supplied articles.
+9. Do not invent or assume facts.
+10. If a section has no relevant information, write "None today."
 
-Return the answer using EXACTLY this format:
+## Output Format
 
 🧠 AI Daily Brief
 
@@ -60,11 +78,15 @@ Return the answer using EXACTLY this format:
 💡 Why Today's News Matters
 <summary>
 
-Maximum 300 words.
+## Rules
 
-Articles:
+- Maximum 300 words.
+- Use clear, professional language.
+- Keep the summary concise.
+- Prioritize factual accuracy over completeness.
+- Do not include introductory or closing remarks.
+
+## Articles
 
 {articles}
-"""
-
-    return prompt
+""".strip()
