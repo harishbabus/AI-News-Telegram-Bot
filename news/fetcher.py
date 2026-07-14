@@ -1,34 +1,55 @@
+from typing import Any
+
 import feedparser
-from news.sources import RSS_SOURCES
+
 from common.logger import logger
+from news.sources import RSS_SOURCES
 
 
-def get_latest_news(limit_per_source=3):
+DEFAULT_LIMIT_PER_SOURCE = 3
 
-    news = []
 
-    for source_name, rss_url in RSS_SOURCES.items():
+def get_latest_news(
+    limit_per_source: int = DEFAULT_LIMIT_PER_SOURCE,
+) -> list[dict[str, Any]]:
+    """
+    Fetches the latest news articles from all configured RSS feeds.
 
+    Args:
+        limit_per_source: Maximum number of articles to fetch from
+            each RSS source.
+
+    Returns:
+        A list of news article dictionaries.
+    """
+    news: list[dict[str, Any]] = []
+
+    for source_name, feed_url in RSS_SOURCES.items():
         try:
+            logger.info("Fetching %s", source_name)
 
-            logger.info(f"Fetching {source_name}")
-
-            feed = feedparser.parse(rss_url)
+            feed = feedparser.parse(feed_url)
 
             if feed.bozo:
-                logger.warning(f"Problem parsing {source_name}")
+                logger.warning(
+                    "Problem parsing %s",
+                    source_name,
+                )
 
             for entry in feed.entries[:limit_per_source]:
-
-                news.append({
+                article = {
                     "source": source_name,
-                    "title": entry.title,
+                    "title": getattr(entry, "title", ""),
                     "summary": getattr(entry, "summary", ""),
-                    "link": entry.link
-                })
+                    "link": getattr(entry, "link", ""),
+                }
 
-        except Exception as e:
+                news.append(article)
 
-            logger.error(f"{source_name} failed: {e}")
+        except Exception:
+            logger.exception(
+                "Failed to fetch RSS feed: %s",
+                source_name,
+            )
 
     return news

@@ -1,18 +1,31 @@
 from app.config import AI_PROVIDER
-
-from providers.openai_provider import OpenAIProvider
+from common.logger import logger
+from providers.base_provider import AIProvider
 from providers.gemini_provider import GeminiProvider
+from providers.openai_provider import OpenAIProvider
 
 
 class ProviderFactory:
+    """Creates AI provider instances."""
 
     @staticmethod
-    def get_provider():
+    def get_provider()  -> AIProvider:
+        """
+        Factory method to get the configured AI provider.
+        """
 
-        if AI_PROVIDER == "openai":
-            return OpenAIProvider()
+        _PROVIDERS = {
+            "gemini": GeminiProvider,
+            "openai": OpenAIProvider,
+        }
 
-        if AI_PROVIDER == "gemini":
-            return GeminiProvider()
+        logger.info("Using AI provider: %s", AI_PROVIDER)
 
-        raise ValueError(f"Unknown provider: {AI_PROVIDER}")
+        provider_class = ProviderFactory._PROVIDERS.get(AI_PROVIDER)
+
+        if provider_class is None:
+            raise ValueError(
+                f"Unsupported AI provider: {AI_PROVIDER}"
+            )
+        
+        return provider_class()
