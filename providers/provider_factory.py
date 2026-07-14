@@ -8,17 +8,16 @@ from providers.openai_provider import OpenAIProvider
 class ProviderFactory:
     """Creates AI provider instances."""
 
+    _PROVIDERS = {
+        "gemini": GeminiProvider,
+        "openai": OpenAIProvider,
+    }
+
     @staticmethod
-    def get_provider()  -> AIProvider:
+    def get_provider() -> AIProvider:
         """
-        Factory method to get the configured AI provider.
+        Returns the configured AI provider.
         """
-
-        _PROVIDERS = {
-            "gemini": GeminiProvider,
-            "openai": OpenAIProvider,
-        }
-
         logger.info("Using AI provider: %s", AI_PROVIDER)
 
         provider_class = ProviderFactory._PROVIDERS.get(AI_PROVIDER)
@@ -27,5 +26,5 @@ class ProviderFactory:
             raise ValueError(
                 f"Unsupported AI provider: {AI_PROVIDER}"
             )
-        
+
         return provider_class()

@@ -1,31 +1,48 @@
 from typing import Any
 
-from openai import OpenAI
+from google import genai
 
-from app.config import OPENAI_API_KEY
+from app.config import GEMINI_API_KEY
 from common.logger import logger
+from prompts.news_summary_prompt import build_news_prompt
 from providers.base_provider import AIProvider
 
 
-class OpenAIProvider(AIProvider):
+class GeminiProvider(AIProvider):
     """
-    AI provider implementation using OpenAI models.
+    AI provider implementation using Google's Gemini models.
     """
 
     def __init__(self) -> None:
-        self.client = OpenAI(api_key=OPENAI_API_KEY)
+        self.client = genai.Client(api_key=GEMINI_API_KEY)
 
     def summarize(self, news: list[dict[str, Any]]) -> str:
         """
-        Generates a summary of the supplied news articles using the OpenAI API.
+        Generates a summary of the supplied news articles using Gemini.
 
         Args:
             news: List of news article dictionaries.
 
         Returns:
-            A summarized string of the news articles.
+            A summarized string.
         """
-        logger.info("Generating summary using OpenAI.")
+        logger.info("Generating summary using Gemini.")
 
-        # TODO: Implement OpenAI summarization.
-        return "OpenAI provider is not implemented yet."
+        prompt = build_news_prompt(news)
+
+        try:
+            response = self.client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+            )
+
+            logger.info("Gemini summary generated successfully.")
+
+            if not response.text:
+                raise RuntimeError("Gemini returned an empty response.")
+
+            return response.text
+
+        except Exception:
+            logger.exception("Gemini summarization failed.")
+            raise

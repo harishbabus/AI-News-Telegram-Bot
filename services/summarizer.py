@@ -1,6 +1,7 @@
 from typing import Any
 
 from common.logger import logger
+from prompts.news_summary_prompt import build_news_prompt
 from providers.provider_factory import ProviderFactory
 
 def summarize_news(news: list[dict[str, Any]]) -> str:
