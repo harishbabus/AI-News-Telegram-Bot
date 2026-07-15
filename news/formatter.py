@@ -1,4 +1,4 @@
-from typing import Any
+from common.models import NewsList
 
 # Telegram message limit (slightly below the official limit)
 MAX_MESSAGE_LENGTH = 4000
@@ -26,12 +26,12 @@ def split_message(message: str) -> list[str]:
     return parts
 
 
-def create_digest(news: list[dict[str, Any]]) -> str:
+def create_digest(news: NewsList) -> str:
     """
     Creates a formatted AI news digest.
 
     Args:
-        news: List of news articles.
+        news: List of NewsArticle instances.
 
     Returns:
         A formatted message ready to be sent to Telegram.
@@ -41,14 +41,15 @@ def create_digest(news: list[dict[str, Any]]) -> str:
         "=" * 25,
         "",
     ]
-
+    
     for article in news:
         lines.extend(
             [
-                article.get("title", ""),
-                article.get("summary", ""),
-                article.get("link", ""),
-                "",
+                f"📰 {article.source}",
+                f"**{article.title}**",
+                article.summary,
+                article.link,
+                "-" * 40,
             ]
         )
 

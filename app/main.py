@@ -1,32 +1,64 @@
-import logging
+"""
+Entry point for the AI News Telegram Bot.
+
+Workflow:
+1. Fetch the latest AI news.
+2. Remove duplicate articles.
+3. Generate a formatted digest.
+4. Generate an AI summary.
+5. Send everything to Telegram.
+"""
+
+
+from common.logger import logger
+from common.utils import remove_duplicates
 
 from news.fetcher import get_latest_news
 from news.formatter import create_digest, split_message
 
-from common.utils import remove_duplicates
 
-from telegram.bot import send_message
 from services.summarizer import summarize_news
 
-logging.basicConfig(
-    filename="logs/bot.log",
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
+from telegram.bot import send_message
 
-logging.info("Bot execution started")
+def main() -> None:
+    """
+    Executes the AI News Telegram Bot workflow.
+    """
+    
+    try:
 
-news = get_latest_news()
-news = remove_duplicates(news)
+        logger.info("Starting AI News Telegram Bot.")
 
-summary = summarize_news(news)
-send_message(summary)
+        news = get_latest_news()
+        news = remove_duplicates(news)
 
-message = create_digest(news)
+        logger.info("%d unique articles collected.", len(news))
 
-parts = split_message(message)
+        if not news:
+            logger.warning("No news articles were retrieved.")
+            return
 
-for part in parts:
-    send_message(part)
+        digest = create_digest(news)
+        summary = summarize_news(news)
 
-logging.info("Bot execution completed")
+        messages = [
+            summary,
+            *split_message(digest),
+        ]
+
+        logger.info(
+            "Sending %d Telegram messages.",
+            len(messages),
+        )
+
+        for message in messages:
+            send_message(message)
+        
+        logger.info("AI News Telegram Bot execution completed.")
+
+    except Exception:
+        logger.exception("An unexpected error occurred during bot execution.")
+    
+if __name__ == "__main__":
+    main()

@@ -1,12 +1,12 @@
-from typing import Any
+from common.models import NewsList
 
 
-def build_news_prompt(news: list[dict[str, Any]]) -> str:
+def build_news_prompt(news: NewsList) -> str:
     """
     Builds the prompt used by the LLM to generate the AI Daily Brief.
 
     Args:
-        news: List of news article dictionaries. Each article should contain:
+        news: List of NewsArticle instances. Each article should contain:
             - source
             - title
             - summary
@@ -16,29 +16,31 @@ def build_news_prompt(news: list[dict[str, Any]]) -> str:
         A formatted prompt string ready to be sent to the LLM.
     """
 
-    article_sections = []
+    article_sections: list[str] = []
 
     for index, article in enumerate(news, start=1):
         article_sections.append(
-            f"""
-==============================
-Article {index}
-
-Source:
-{article.get("source", "Unknown")}
-
-Title:
-{article.get("title", "Untitled")}
-
-Summary:
-{article.get("summary", "No summary available.")}
-
-Link:
-{article.get("link", "N/A")}
-""".strip()
+            "\n".join(
+                [
+                    "==============================",
+                    f"Article {index}",
+                    "",
+                    "Source:",
+                    article.source,
+                    "",
+                    "Title:",
+                    article.title,
+                    "",
+                    "Summary:",
+                    article.summary,
+                    "",
+                    "Link:",
+                    article.link,
+                ]
+            )
         )
 
-    articles = "\n\n".join(article_sections)
+    formatted_articles = "\n\n".join(article_sections)
 
     return f"""
 You are an experienced AI News Editor responsible for creating a concise, accurate, and engaging daily AI news briefing for technology professionals.
@@ -59,6 +61,17 @@ Analyze the provided news articles and produce a high-quality daily AI news summ
 8. Use only information contained in the supplied articles.
 9. Do not invent or assume facts.
 10. If a section has no relevant information, write "None today."
+11. Always include the names of important companies, 
+models, or research papers exactly as written in
+the source articles.
+12. Do not repeat the same news in multiple sections.
+
+## Writing Style
+
+- Be objective.
+- Avoid sensational language.
+- Mention product and model names exactly as given.
+- Do not repeat information across sections.
 
 ## Output Format
 
@@ -88,5 +101,5 @@ Analyze the provided news articles and produce a high-quality daily AI news summ
 
 ## Articles
 
-{articles}
+{formatted_articles}
 """.strip()

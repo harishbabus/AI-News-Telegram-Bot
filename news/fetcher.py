@@ -1,8 +1,7 @@
-from typing import Any
-
 import feedparser
 
 from common.logger import logger
+from common.models import NewsArticle, NewsList
 from news.sources import RSS_SOURCES
 
 
@@ -11,7 +10,7 @@ DEFAULT_LIMIT_PER_SOURCE = 3
 
 def get_latest_news(
     limit_per_source: int = DEFAULT_LIMIT_PER_SOURCE,
-) -> list[dict[str, Any]]:
+) -> NewsList:
     """
     Fetches the latest news articles from all configured RSS feeds.
 
@@ -20,29 +19,43 @@ def get_latest_news(
             each RSS source.
 
     Returns:
-        A list of news article dictionaries.
+        A list of NewsArticle instances.
     """
-    news: list[dict[str, Any]] = []
+
+    news: NewsList = []
 
     for source_name, feed_url in RSS_SOURCES.items():
         try:
-            logger.info("Fetching %s", source_name)
+
+            logger.info("Fetching RSS feed: %s", source_name)
 
             feed = feedparser.parse(feed_url)
+            available_articles = len(feed.entries)
 
             if feed.bozo:
                 logger.warning(
-                    "Problem parsing %s",
+                    "Skipping invalid RSS feed '%s': %s",
                     source_name,
+                    feed.bozo_exception,
                 )
+                continue
+
+            logger.info(
+                "Fetched %d articles from %s",
+                available_articles,
+                source_name,
+            )
+
+            if available_articles == 0:
+                continue
 
             for entry in feed.entries[:limit_per_source]:
-                article = {
-                    "source": source_name,
-                    "title": getattr(entry, "title", ""),
-                    "summary": getattr(entry, "summary", ""),
-                    "link": getattr(entry, "link", ""),
-                }
+                article = NewsArticle(
+                    source=source_name,
+                    title=getattr(entry, "title", ""),
+                    summary=getattr(entry, "summary", ""),
+                    link=getattr(entry, "link", ""),
+                )
 
                 news.append(article)
 

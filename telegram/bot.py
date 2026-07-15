@@ -1,11 +1,16 @@
+# Third-party imports
 import requests
 
+# Local application imports
 from app.config import BOT_TOKEN, CHAT_ID
 from common.logger import logger
 
 TELEGRAM_API_URL = (
     f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 )
+
+REQUEST_TIMEOUT = 30
+
 
 def send_message(message: str) -> bool:
     """
@@ -20,7 +25,7 @@ def send_message(message: str) -> bool:
 
     payload = {
         "chat_id": CHAT_ID,
-        "text": message
+        "text": message,
     }
 
     try:
@@ -29,14 +34,27 @@ def send_message(message: str) -> bool:
         response = requests.post(
             TELEGRAM_API_URL,
             data=payload,
-            timeout=30,
+            timeout=REQUEST_TIMEOUT,
         )
 
         response.raise_for_status()
 
-        logger.info("Message sent successfully.")
-        return True
+        result = response.json()
 
+        if result.get("ok"):
+            logger.info(
+                "Telegram message sent successfully to chat %s.",
+                CHAT_ID,
+            )
+            return True
+
+        logger.error(
+            "Telegram API returned an error: %s",
+            result.get("description", "Unknown error"),
+        )
+
+        return False
+    
     except requests.RequestException:
         logger.exception("Failed to send Telegram message.")
         return False
