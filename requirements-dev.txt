@@ -1,0 +1,11 @@
+#pip install ruff
+ruff==0.15.22 # linting
+
+# pip install black
+black==26.5.1 # Formatting
+
+# pip install mypy
+mypy==2.3.0 # Compiler
+
+# pip install pytest
+pytest==9.1.1 # Testing

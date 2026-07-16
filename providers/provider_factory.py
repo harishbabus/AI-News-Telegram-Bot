@@ -23,8 +23,6 @@ class ProviderFactory:
         provider_class = ProviderFactory._PROVIDERS.get(AI_PROVIDER)
 
         if provider_class is None:
-            raise ValueError(
-                f"Unsupported AI provider: {AI_PROVIDER}"
-            )
+            raise ValueError(f"Unsupported AI provider: {AI_PROVIDER}")
 
         return provider_class()

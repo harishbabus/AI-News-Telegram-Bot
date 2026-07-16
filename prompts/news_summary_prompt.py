@@ -43,7 +43,9 @@ def build_news_prompt(news: NewsList) -> str:
     formatted_articles = "\n\n".join(article_sections)
 
     PROMPT_TEMPLATE = """
-    You are an experienced AI News Editor responsible for creating a concise, accurate, and engaging daily AI news briefing for technology professionals.
+    You are an experienced AI News Editor responsible for creating 
+    a concise, accurate, and engaging daily AI news briefing 
+    for technology professionals.
 
     ## Objective
 

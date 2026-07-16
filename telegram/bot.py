@@ -6,9 +6,7 @@ from app.config import BOT_TOKEN, CHAT_ID
 from common.constants import TELEGRAM_REQUEST_TIMEOUT
 from common.logger import logger
 
-TELEGRAM_API_URL = (
-    f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-)
+TELEGRAM_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
 
 def send_message(message: str) -> bool:
@@ -53,7 +51,7 @@ def send_message(message: str) -> bool:
         )
 
         return False
-    
+
     except requests.RequestException:
         logger.exception("Failed to send Telegram message.")
         return False

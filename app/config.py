@@ -20,9 +20,7 @@ OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
 GEMINI_API_KEY: str | None = os.getenv("GEMINI_API_KEY")
 
 if not BOT_TOKEN or not CHAT_ID:
-    raise ValueError(
-        "BOT_TOKEN and CHAT_ID must be configured."
-    )
+    raise ValueError("BOT_TOKEN and CHAT_ID must be configured.")
 
 if AI_PROVIDER not in SUPPORTED_PROVIDERS:
     raise ValueError(
@@ -31,11 +29,7 @@ if AI_PROVIDER not in SUPPORTED_PROVIDERS:
     )
 
 if AI_PROVIDER == "gemini" and not GEMINI_API_KEY:
-    raise ValueError(
-        "GEMINI_API_KEY must be configured when AI_PROVIDER=gemini."
-    )
+    raise ValueError("GEMINI_API_KEY must be configured when AI_PROVIDER=gemini.")
 
 if AI_PROVIDER == "openai" and not OPENAI_API_KEY:
-    raise ValueError(
-        "OPENAI_API_KEY must be configured when AI_PROVIDER=openai."
-    )
+    raise ValueError("OPENAI_API_KEY must be configured when AI_PROVIDER=openai.")

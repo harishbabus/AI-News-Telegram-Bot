@@ -2,15 +2,17 @@
 Unit tests for common.utils.
 """
 
+from common.models import NewsList
 from common.utils import remove_duplicates
+from tests.types import ArticleFactory
 
 
-def test_remove_duplicates_empty_list():
+def test_remove_duplicates_empty_list() -> None:
     """
     Returns an empty list when no articles are provided.
     """
     # Arrange
-    news = []
+    news: NewsList = []
 
     # Act
     result = remove_duplicates(news)
@@ -19,7 +21,9 @@ def test_remove_duplicates_empty_list():
     assert result == []
 
 
-def test_remove_duplicates_single_article(article_factory):
+def test_remove_duplicates_single_article(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Returns the original list when it contains only one article.
     """
@@ -33,7 +37,9 @@ def test_remove_duplicates_single_article(article_factory):
     assert result == [article]
 
 
-def test_remove_duplicates_no_duplicates(article_factory):
+def test_remove_duplicates_no_duplicates(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Keeps all articles when there are no duplicate titles.
     """
@@ -55,7 +61,9 @@ def test_remove_duplicates_no_duplicates(article_factory):
     assert result == [article1, article2]
 
 
-def test_remove_duplicates_duplicate_titles(article_factory):
+def test_remove_duplicates_duplicate_titles(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Removes duplicate articles that have identical titles.
     """
@@ -77,7 +85,9 @@ def test_remove_duplicates_duplicate_titles(article_factory):
     assert result == [article1]
 
 
-def test_remove_duplicates_case_insensitive(article_factory):
+def test_remove_duplicates_case_insensitive(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Treats titles with different letter casing as duplicates.
     """
@@ -93,7 +103,9 @@ def test_remove_duplicates_case_insensitive(article_factory):
     assert result == [article1]
 
 
-def test_remove_duplicates_ignores_whitespace(article_factory):
+def test_remove_duplicates_ignores_whitespace(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Ignores leading and trailing whitespace when comparing titles.
     """
@@ -109,7 +121,9 @@ def test_remove_duplicates_ignores_whitespace(article_factory):
     assert result == [article1]
 
 
-def test_remove_duplicates_preserves_order(article_factory):
+def test_remove_duplicates_preserves_order(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Preserves the order of the first occurrence of each unique article.
     """

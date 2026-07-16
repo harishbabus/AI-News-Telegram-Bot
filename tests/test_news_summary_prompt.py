@@ -2,19 +2,21 @@
 Unit tests for prompts.news_summary_prompt.
 """
 
+from common.models import NewsList
 from prompts.news_summary_prompt import build_news_prompt
-
+from tests.types import ArticleFactory
 
 # ============================================================================
 # build_news_prompt()
 # ============================================================================
 
-def test_build_news_prompt_empty_news():
+
+def test_build_news_prompt_empty_news() -> None:
     """
     Builds a valid prompt even when no news articles are supplied.
     """
     # Arrange
-    news = []
+    news: NewsList = []
 
     # Act
     prompt = build_news_prompt(news)
@@ -24,7 +26,9 @@ def test_build_news_prompt_empty_news():
     assert "## Articles" in prompt
 
 
-def test_build_news_prompt_single_article(article_factory):
+def test_build_news_prompt_single_article(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Includes all fields of a single news article.
     """
@@ -47,7 +51,9 @@ def test_build_news_prompt_single_article(article_factory):
     assert "https://example.com" in prompt
 
 
-def test_build_news_prompt_multiple_articles(article_factory):
+def test_build_news_prompt_multiple_articles(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Includes all supplied articles.
     """
@@ -73,7 +79,9 @@ def test_build_news_prompt_multiple_articles(article_factory):
     assert "Gemini 3 Released" in prompt
 
 
-def test_build_news_prompt_contains_editor_instructions(article_factory):
+def test_build_news_prompt_contains_editor_instructions(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Includes the LLM instructions.
     """
@@ -90,7 +98,9 @@ def test_build_news_prompt_contains_editor_instructions(article_factory):
     assert "Do not invent or assume facts." in prompt
 
 
-def test_build_news_prompt_contains_required_output_format(article_factory):
+def test_build_news_prompt_contains_required_output_format(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Includes the required output sections.
     """
@@ -108,7 +118,9 @@ def test_build_news_prompt_contains_required_output_format(article_factory):
     assert "💡 Why Today's News Matters" in prompt
 
 
-def test_build_news_prompt_contains_article_separator(article_factory):
+def test_build_news_prompt_contains_article_separator(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Separates articles using the expected divider.
     """
@@ -122,7 +134,9 @@ def test_build_news_prompt_contains_article_separator(article_factory):
     assert "==============================" in prompt
 
 
-def test_build_news_prompt_preserves_article_order(article_factory):
+def test_build_news_prompt_preserves_article_order(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Preserves the order of supplied articles.
     """
@@ -138,7 +152,9 @@ def test_build_news_prompt_preserves_article_order(article_factory):
     assert prompt.index("Article One") < prompt.index("Article Two")
 
 
-def test_build_news_prompt_includes_article_links(article_factory):
+def test_build_news_prompt_includes_article_links(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Includes article links in the generated prompt.
     """

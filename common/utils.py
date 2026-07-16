@@ -15,9 +15,9 @@ def remove_duplicates(news: NewsList) -> NewsList:
         A list containing unique news articles while preserving their
         original order.
     """
-    
+
     seen_titles: set[str] = set()
-    unique_articles: NewsList  = []
+    unique_articles: NewsList = []
 
     for article in news:
         normalized_title = article.title.strip().lower()

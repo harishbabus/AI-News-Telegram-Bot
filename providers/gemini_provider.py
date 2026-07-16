@@ -1,10 +1,9 @@
-from typing import Any
-
 from google import genai
 
 from app.config import GEMINI_API_KEY
 from common.constants import GEMINI_MODEL
 from common.logger import logger
+from common.models import NewsList
 from prompts.news_summary_prompt import build_news_prompt
 from providers.base_provider import AIProvider
 
@@ -17,7 +16,7 @@ class GeminiProvider(AIProvider):
     def __init__(self) -> None:
         self.client = genai.Client(api_key=GEMINI_API_KEY)
 
-    def summarize(self, news: list[dict[str, Any]]) -> str:
+    def summarize(self, news: NewsList) -> str:
         """
         Generates a summary of the supplied news articles using Gemini.
 

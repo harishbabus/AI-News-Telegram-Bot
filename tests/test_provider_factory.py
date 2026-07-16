@@ -12,7 +12,7 @@ from providers.openai_provider import OpenAIProvider
 from providers.provider_factory import ProviderFactory
 
 
-def test_returns_gemini_provider():
+def test_returns_gemini_provider() -> None:
     """
     Returns a GeminiProvider when AI_PROVIDER is 'gemini'.
     """
@@ -26,7 +26,7 @@ def test_returns_gemini_provider():
     assert isinstance(provider, AIProvider)
 
 
-def test_returns_openai_provider():
+def test_returns_openai_provider() -> None:
     """
     Returns an OpenAIProvider when AI_PROVIDER is 'openai'.
     """
@@ -40,7 +40,7 @@ def test_returns_openai_provider():
     assert isinstance(provider, AIProvider)
 
 
-def test_raises_error_for_unknown_provider():
+def test_raises_error_for_unknown_provider() -> None:
     """
     Raises ValueError for an unsupported provider.
     """
@@ -55,7 +55,7 @@ def test_raises_error_for_unknown_provider():
             ProviderFactory.get_provider()
 
 
-def test_logs_selected_provider():
+def test_logs_selected_provider() -> None:
     """
     Logs the configured AI provider.
     """

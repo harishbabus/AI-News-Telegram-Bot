@@ -41,7 +41,7 @@ def create_digest(news: NewsList) -> str:
         "=" * 25,
         "",
     ]
-    
+
     for article in news:
         lines.extend(
             [

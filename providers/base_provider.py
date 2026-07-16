@@ -6,7 +6,8 @@ from AIProvider and implement the summarize() method.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+
+from common.models import NewsList
 
 
 class AIProvider(ABC):
@@ -17,7 +18,7 @@ class AIProvider(ABC):
     @abstractmethod
     def summarize(
         self,
-        news: list[dict[str, Any]],
+        news: NewsList,
     ) -> str:
         """
         Generates a summary of the supplied news articles.

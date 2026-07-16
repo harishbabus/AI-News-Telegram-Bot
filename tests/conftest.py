@@ -2,6 +2,7 @@
 Shared pytest fixtures.
 """
 
+from collections.abc import Callable
 from types import SimpleNamespace
 
 import pytest
@@ -10,7 +11,7 @@ from common.models import NewsArticle
 
 
 @pytest.fixture
-def article_factory():
+def article_factory() -> Callable[..., NewsArticle]:
     """
     Factory fixture for creating NewsArticle instances.
     """
@@ -37,7 +38,7 @@ def article_factory():
 
 
 @pytest.fixture
-def fake_feed_entry():
+def fake_feed_entry() -> SimpleNamespace:
     """
     Returns a fake RSS feed entry.
     """
@@ -49,7 +50,9 @@ def fake_feed_entry():
 
 
 @pytest.fixture
-def fake_feed(fake_feed_entry):
+def fake_feed(
+    fake_feed_entry: SimpleNamespace,
+) -> SimpleNamespace:
     """
     Returns a valid RSS feed containing one article.
     """
@@ -60,7 +63,7 @@ def fake_feed(fake_feed_entry):
 
 
 @pytest.fixture
-def many_entries_feed():
+def many_entries_feed() -> SimpleNamespace:
     """
     Returns a valid RSS feed containing multiple articles.
     """
@@ -80,7 +83,7 @@ def many_entries_feed():
 
 
 @pytest.fixture
-def empty_feed():
+def empty_feed() -> SimpleNamespace:
     """
     Returns an empty RSS feed.
     """
@@ -91,7 +94,9 @@ def empty_feed():
 
 
 @pytest.fixture
-def malformed_feed(fake_feed_entry):
+def malformed_feed(
+    fake_feed_entry: SimpleNamespace,
+) -> SimpleNamespace:
     """
     Returns a malformed RSS feed.
     """

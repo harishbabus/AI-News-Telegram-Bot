@@ -2,7 +2,6 @@
 Shared application constants.
 """
 
-
 # ==========================
 # Logging
 # ==========================

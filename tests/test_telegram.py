@@ -5,11 +5,12 @@ Unit tests for telegram.bot.
 from unittest.mock import Mock, patch
 
 import requests
+
 from app.config import CHAT_ID
 from telegram.bot import send_message
 
 
-def test_send_message_success():
+def test_send_message_success() -> None:
     """
     Returns True when Telegram accepts the message.
     """
@@ -27,7 +28,7 @@ def test_send_message_success():
     mock_post.assert_called_once()
 
 
-def test_send_message_api_error():
+def test_send_message_api_error() -> None:
     """
     Returns False when Telegram responds with ok=False.
     """
@@ -47,7 +48,7 @@ def test_send_message_api_error():
     assert result is False
 
 
-def test_send_message_request_exception():
+def test_send_message_request_exception() -> None:
     """
     Returns False when the HTTP request fails.
     """
@@ -60,7 +61,7 @@ def test_send_message_request_exception():
     assert result is False
 
 
-def test_send_message_posts_correct_payload():
+def test_send_message_posts_correct_payload() -> None:
     """
     Sends the expected payload to Telegram.
     """

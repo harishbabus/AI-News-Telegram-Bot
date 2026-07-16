@@ -9,23 +9,19 @@ Workflow:
 5. Send everything to Telegram.
 """
 
-
 from common.logger import logger
 from common.utils import remove_duplicates
-
 from news.fetcher import get_latest_news
 from news.formatter import create_digest, split_message
-
-
 from services.summarizer import summarize_news
-
 from telegram.bot import send_message
+
 
 def main() -> None:
     """
     Executes the AI News Telegram Bot workflow.
     """
-    
+
     try:
 
         logger.info("Starting AI News Telegram Bot.")
@@ -54,11 +50,12 @@ def main() -> None:
 
         for message in messages:
             send_message(message)
-        
+
         logger.info("AI News Telegram Bot execution completed.")
 
     except Exception:
         logger.exception("An unexpected error occurred during bot execution.")
-    
+
+
 if __name__ == "__main__":
     main()
