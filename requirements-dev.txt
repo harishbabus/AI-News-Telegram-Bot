@@ -1,11 +1,14 @@
 #pip install ruff
-ruff==0.15.22 # linting
+ruff==0.15.22 # linting // ruff check. / ruff check . --fix
 
 # pip install black
-black==26.5.1 # Formatting
+black==26.5.1 # Formatting // black .
 
 # pip install mypy
-mypy==2.3.0 # Compiler
+mypy==2.3.0 # Compiler // mypy .
 
 # pip install pytest
-pytest==9.1.1 # Testing
+pytest==9.1.1 # Testing // pytest
+
+# pip install pytest-cov
+pytest-cov=7.1.0 # Test Coverage // pytest --cov=. --cov-report=term-missing
