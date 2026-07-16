@@ -1,11 +1,9 @@
 import feedparser
 
+from common.constants import DEFAULT_LIMIT_PER_SOURCE
 from common.logger import logger
 from common.models import NewsArticle, NewsList
 from news.sources import RSS_SOURCES
-
-
-DEFAULT_LIMIT_PER_SOURCE = 3
 
 
 def get_latest_news(
@@ -30,7 +28,6 @@ def get_latest_news(
             logger.info("Fetching RSS feed: %s", source_name)
 
             feed = feedparser.parse(feed_url)
-            available_articles = len(feed.entries)
 
             if feed.bozo:
                 logger.warning(
@@ -40,8 +37,10 @@ def get_latest_news(
                 )
                 continue
 
+            available_articles = len(feed.entries)
+
             logger.info(
-                "Fetched %d articles from %s",
+                "Found %d articles from %s",
                 available_articles,
                 source_name,
             )

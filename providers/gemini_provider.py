@@ -3,6 +3,7 @@ from typing import Any
 from google import genai
 
 from app.config import GEMINI_API_KEY
+from common.constants import GEMINI_MODEL
 from common.logger import logger
 from prompts.news_summary_prompt import build_news_prompt
 from providers.base_provider import AIProvider
@@ -32,7 +33,7 @@ class GeminiProvider(AIProvider):
 
         try:
             response = self.client.models.generate_content(
-                model="gemini-2.5-flash",
+                model=GEMINI_MODEL,
                 contents=prompt,
             )
 

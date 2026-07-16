@@ -3,13 +3,12 @@ import requests
 
 # Local application imports
 from app.config import BOT_TOKEN, CHAT_ID
+from common.constants import TELEGRAM_REQUEST_TIMEOUT
 from common.logger import logger
 
 TELEGRAM_API_URL = (
     f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 )
-
-REQUEST_TIMEOUT = 30
 
 
 def send_message(message: str) -> bool:
@@ -34,7 +33,7 @@ def send_message(message: str) -> bool:
         response = requests.post(
             TELEGRAM_API_URL,
             data=payload,
-            timeout=REQUEST_TIMEOUT,
+            timeout=TELEGRAM_REQUEST_TIMEOUT,
         )
 
         response.raise_for_status()

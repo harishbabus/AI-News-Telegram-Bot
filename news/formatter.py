@@ -1,7 +1,7 @@
+from common.constants import MAX_TELEGRAM_MESSAGE_LENGTH
 from common.models import NewsList
 
 # Telegram message limit (slightly below the official limit)
-MAX_MESSAGE_LENGTH = 4000
 
 
 def split_message(message: str) -> list[str]:
@@ -17,9 +17,9 @@ def split_message(message: str) -> list[str]:
     """
     parts: list[str] = []
 
-    while len(message) > MAX_MESSAGE_LENGTH:
-        parts.append(message[:MAX_MESSAGE_LENGTH])
-        message = message[MAX_MESSAGE_LENGTH:]
+    while len(message) > MAX_TELEGRAM_MESSAGE_LENGTH:
+        parts.append(message[:MAX_TELEGRAM_MESSAGE_LENGTH])
+        message = message[MAX_TELEGRAM_MESSAGE_LENGTH:]
 
     parts.append(message)
 
