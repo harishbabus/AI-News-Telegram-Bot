@@ -2,17 +2,18 @@
 Entry point for the AI News Telegram Bot.
 
 Workflow:
-1. Fetch the latest AI news.
+1. Fetch latest AI news.
 2. Remove duplicate articles.
-3. Generate a formatted digest.
-4. Generate an AI summary.
-5. Send everything to Telegram.
+3. Build the Telegram digest.
+4. Generate an AI summary using the configured provider.
+5. Send the summary and digest to Telegram.
 """
 
 from common.logger import logger
 from common.utils import remove_duplicates
 from news.fetcher import get_latest_news
 from news.formatter import create_digest, split_message
+from providers.provider_factory import ProviderFactory
 from services.summarizer import summarize_news
 from telegram.bot import send_message
 
@@ -26,6 +27,8 @@ def main() -> None:
 
         logger.info("Starting AI News Telegram Bot.")
 
+        provider = ProviderFactory.get_provider()
+
         news = get_latest_news()
         news = remove_duplicates(news)
 
@@ -36,7 +39,11 @@ def main() -> None:
             return
 
         digest = create_digest(news)
-        summary = summarize_news(news)
+
+        summary = summarize_news(
+            news,
+            provider,
+        )
 
         messages = [
             summary,

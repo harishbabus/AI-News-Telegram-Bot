@@ -4,10 +4,12 @@ Shared pytest fixtures.
 
 from collections.abc import Callable
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import pytest
 
 from common.models import NewsArticle
+from providers.base_provider import AIProvider
 
 
 @pytest.fixture
@@ -105,3 +107,11 @@ def malformed_feed(
         bozo=True,
         bozo_exception=Exception("Malformed XML"),
     )
+
+
+@pytest.fixture
+def provider() -> Mock:
+    """
+    Returns a mocked AI provider.
+    """
+    return Mock(spec=AIProvider)

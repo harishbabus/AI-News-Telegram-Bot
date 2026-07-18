@@ -1,35 +1,18 @@
 """
-Configuration module for the AI News Telegram Bot application.
+Backward compatibility layer.
 
-This module loads environment variables from a .env file (if present)
-and exposes configuration values used throughout the application.
+Existing modules can continue importing configuration
+from app.config until they are migrated to app.settings.
 """
 
-import os
+from app.settings import settings
 
-from dotenv import load_dotenv
+BOT_TOKEN: str = settings.bot_token
+CHAT_ID: str = settings.chat_id
 
-load_dotenv()
+AI_PROVIDER: str = settings.ai_provider
 
-SUPPORTED_PROVIDERS = {"gemini", "openai"}
+OPENAI_API_KEY: str = settings.openai_api_key
+GEMINI_API_KEY: str = settings.gemini_api_key
 
-BOT_TOKEN: str | None = os.getenv("BOT_TOKEN")
-CHAT_ID: str | None = os.getenv("CHAT_ID")
-AI_PROVIDER: str = os.getenv("AI_PROVIDER", "gemini").lower()
-OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
-GEMINI_API_KEY: str | None = os.getenv("GEMINI_API_KEY")
-
-if not BOT_TOKEN or not CHAT_ID:
-    raise ValueError("BOT_TOKEN and CHAT_ID must be configured.")
-
-if AI_PROVIDER not in SUPPORTED_PROVIDERS:
-    raise ValueError(
-        f"Unsupported AI_PROVIDER '{AI_PROVIDER}'. "
-        f"Supported values: {', '.join(sorted(SUPPORTED_PROVIDERS))}."
-    )
-
-if AI_PROVIDER == "gemini" and not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY must be configured when AI_PROVIDER=gemini.")
-
-if AI_PROVIDER == "openai" and not OPENAI_API_KEY:
-    raise ValueError("OPENAI_API_KEY must be configured when AI_PROVIDER=openai.")
+SUPPORTED_PROVIDERS: set[str] = settings.supported_providers

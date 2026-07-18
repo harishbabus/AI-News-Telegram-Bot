@@ -2,36 +2,54 @@
 Unit tests for app.main.
 """
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, call, patch
 
 from app.main import main
 from tests.types import ArticleFactory
 
 
-def test_main_success(article_factory: ArticleFactory) -> None:
+def test_main_happy_path(
+    article_factory: ArticleFactory,
+) -> None:
     """
     Executes the complete workflow successfully.
     """
     article = article_factory()
+    mock_provider = MagicMock()
 
     with (
         patch("app.main.get_latest_news", return_value=[article]),
         patch("app.main.remove_duplicates", return_value=[article]),
         patch("app.main.create_digest", return_value="Digest"),
-        patch("app.main.summarize_news", return_value="Summary"),
         patch(
-            "app.main.split_message", return_value=["Digest Part 1", "Digest Part 2"]
+            "app.main.ProviderFactory.get_provider",
+            return_value=mock_provider,
+        ),
+        patch(
+            "app.main.summarize_news",
+            return_value="Summary",
+        ),
+        patch(
+            "app.main.split_message",
+            return_value=[
+                "Digest Part 1",
+                "Digest Part 2",
+            ],
         ),
         patch("app.main.send_message") as mock_send,
         patch("app.main.logger.info"),
     ):
         main()
 
-    assert mock_send.call_count == 3
+    mock_send.assert_has_calls(
+        [
+            call("Summary"),
+            call("Digest Part 1"),
+            call("Digest Part 2"),
+        ]
+    )
 
-    mock_send.assert_any_call("Summary")
-    mock_send.assert_any_call("Digest Part 1")
-    mock_send.assert_any_call("Digest Part 2")
+    assert mock_send.call_count == 3
 
 
 def test_main_no_news() -> None:
@@ -40,34 +58,40 @@ def test_main_no_news() -> None:
     """
     with (
         patch("app.main.get_latest_news", return_value=[]),
-        patch("app.main.remove_duplicates", return_value=[]),
         patch("app.main.logger.warning") as mock_warning,
-        patch("app.main.summarize_news") as mock_summary,
         patch("app.main.send_message") as mock_send,
     ):
         main()
 
-    mock_warning.assert_called_once_with(
-        "No news articles were retrieved.",
-    )
+    mock_warning.assert_called_once_with("No news articles were retrieved.")
 
-    mock_summary.assert_not_called()
     mock_send.assert_not_called()
 
 
-def test_main_calls_remove_duplicates(
+def test_main_removes_duplicates(
     article_factory: ArticleFactory,
 ) -> None:
     """
-    Removes duplicate articles before summarization.
+    Removes duplicate news before generating the digest.
     """
     article = article_factory()
+    mock_provider = MagicMock()
 
     with (
         patch("app.main.get_latest_news", return_value=[article]),
-        patch("app.main.remove_duplicates", return_value=[article]) as mock_remove,
+        patch(
+            "app.main.remove_duplicates",
+            return_value=[article],
+        ) as mock_remove,
         patch("app.main.create_digest", return_value="Digest"),
-        patch("app.main.summarize_news", return_value="Summary"),
+        patch(
+            "app.main.ProviderFactory.get_provider",
+            return_value=mock_provider,
+        ),
+        patch(
+            "app.main.summarize_news",
+            return_value="Summary",
+        ),
         patch("app.main.split_message", return_value=[]),
         patch("app.main.send_message"),
     ):
@@ -83,12 +107,23 @@ def test_main_calls_create_digest(
     Creates the Telegram digest.
     """
     article = article_factory()
+    mock_provider = MagicMock()
 
     with (
         patch("app.main.get_latest_news", return_value=[article]),
         patch("app.main.remove_duplicates", return_value=[article]),
-        patch("app.main.create_digest", return_value="Digest") as mock_digest,
-        patch("app.main.summarize_news", return_value="Summary"),
+        patch(
+            "app.main.create_digest",
+            return_value="Digest",
+        ) as mock_digest,
+        patch(
+            "app.main.ProviderFactory.get_provider",
+            return_value=mock_provider,
+        ),
+        patch(
+            "app.main.summarize_news",
+            return_value="Summary",
+        ),
         patch("app.main.split_message", return_value=[]),
         patch("app.main.send_message"),
     ):
@@ -104,45 +139,73 @@ def test_main_calls_summarizer(
     Generates the AI summary.
     """
     article = article_factory()
+    mock_provider = MagicMock()
 
     with (
         patch("app.main.get_latest_news", return_value=[article]),
         patch("app.main.remove_duplicates", return_value=[article]),
         patch("app.main.create_digest", return_value="Digest"),
-        patch("app.main.summarize_news", return_value="Summary") as mock_summary,
+        patch(
+            "app.main.ProviderFactory.get_provider",
+            return_value=mock_provider,
+        ),
+        patch(
+            "app.main.summarize_news",
+            return_value="Summary",
+        ) as mock_summary,
         patch("app.main.split_message", return_value=[]),
         patch("app.main.send_message"),
     ):
         main()
 
-    mock_summary.assert_called_once_with([article])
+    mock_summary.assert_called_once_with(
+        [article],
+        mock_provider,
+    )
 
 
-def test_main_calls_split_message(
+def test_main_sends_all_messages(
     article_factory: ArticleFactory,
 ) -> None:
     """
-    Splits the digest before sending.
+    Sends the summary followed by all digest parts.
     """
     article = article_factory()
+    mock_provider = MagicMock()
 
     with (
         patch("app.main.get_latest_news", return_value=[article]),
         patch("app.main.remove_duplicates", return_value=[article]),
         patch("app.main.create_digest", return_value="Digest"),
-        patch("app.main.summarize_news", return_value="Summary"),
+        patch(
+            "app.main.ProviderFactory.get_provider",
+            return_value=mock_provider,
+        ),
+        patch(
+            "app.main.summarize_news",
+            return_value="Summary",
+        ),
         patch(
             "app.main.split_message",
-            return_value=["Digest"],
-        ) as mock_split,
-        patch("app.main.send_message"),
+            return_value=[
+                "Part 1",
+                "Part 2",
+            ],
+        ),
+        patch("app.main.send_message") as mock_send,
     ):
         main()
 
-    mock_split.assert_called_once_with("Digest")
+    mock_send.assert_has_calls(
+        [
+            call("Summary"),
+            call("Part 1"),
+            call("Part 2"),
+        ]
+    )
 
 
-def test_main_logs_unexpected_exception() -> None:
+def test_main_handles_unexpected_exception() -> None:
     """
     Logs unexpected exceptions.
     """
@@ -156,5 +219,5 @@ def test_main_logs_unexpected_exception() -> None:
         main()
 
     mock_exception.assert_called_once_with(
-        "An unexpected error occurred during bot execution.",
+        "An unexpected error occurred during bot execution."
     )

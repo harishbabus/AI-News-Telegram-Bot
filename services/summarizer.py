@@ -1,16 +1,15 @@
 from common.logger import logger
 from common.models import NewsList
-from providers.provider_factory import ProviderFactory
+from providers.base_provider import AIProvider
 
 
-def summarize_news(news: NewsList) -> str:
+def summarize_news(news: NewsList, provider: AIProvider) -> str:
     """
     Generates an AI summary of the collected news articles.
 
-    The configured AI provider is selected using the ProviderFactory.
-
     Args:
         news: News articles to summarize.
+        provider: AI provider used to generate the summary.
 
     Returns:
         A summarized string containing the key highlights.
@@ -20,8 +19,6 @@ def summarize_news(news: NewsList) -> str:
         logger.warning("No news articles available for summarization.")
         return "No news articles available."
 
-    provider = ProviderFactory.get_provider()
-
     logger.info(
         "Summarizing %d articles using %s.",
         len(news),
@@ -30,9 +27,7 @@ def summarize_news(news: NewsList) -> str:
 
     try:
         summary = provider.summarize(news)
-
         logger.info("News summarization completed.")
-
         return summary
 
     except Exception:
