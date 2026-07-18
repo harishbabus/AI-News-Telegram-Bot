@@ -11,4 +11,4 @@ mypy==2.3.0 # Compiler // mypy .
 pytest==9.1.1 # Testing // pytest
 
 # pip install pytest-cov
-pytest-cov=7.1.0 # Test Coverage // pytest --cov=. --cov-report=term-missing
+pytest-cov==7.1.0 # Test Coverage // pytest --cov=. --cov-report=term-missing
