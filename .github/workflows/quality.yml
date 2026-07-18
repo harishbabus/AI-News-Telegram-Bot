@@ -35,5 +35,13 @@ jobs:
       - name: Run MyPy
         run: mypy .
 
+      - name: Run tests
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          AI_PROVIDER: ${{ secrets.AI_PROVIDER }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          
       - name: Run Unit Tests
         run: pytest --cov=. --cov-report=term-missing
