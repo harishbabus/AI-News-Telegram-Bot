@@ -75,8 +75,8 @@ class _ArticleHTMLParser(HTMLParser):
             self.text_parts.append(cleaned)
 
 
-def _normalise(value: str) -> str:
-    return _SPACE_RE.sub(" ", html.unescape(value or "")).strip()
+def _normalise(value: str | None) -> str:
+    return " ".join((value or "").casefold().split())
 
 
 def _title_overlap(feed_title: str, page_title: str) -> float:

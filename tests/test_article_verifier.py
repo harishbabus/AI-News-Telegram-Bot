@@ -1,11 +1,14 @@
-from unittest.mock import Mock
+from typing import Any
+from unittest.mock import MagicMock
+
+import pytest
 
 from common.models import NewsArticle
 from services.article_verifier import verify_article, verify_articles
 
 
-def _article(**overrides) -> NewsArticle:
-    values = {
+def _article(**overrides: Any) -> NewsArticle:
+    values: dict[str, Any] = {
         "source": "OpenAI",
         "title": "OpenAI launches a new model for developers",
         "summary": "A new model was announced.",
@@ -20,7 +23,7 @@ def _article(**overrides) -> NewsArticle:
 
 
 def test_verify_article_marks_matching_html_verified() -> None:
-    response = Mock()
+    response = MagicMock()
     response.url = "https://openai.com/article"
     response.headers = {"content-type": "text/html; charset=utf-8"}
     response.text = """
@@ -37,7 +40,7 @@ def test_verify_article_marks_matching_html_verified() -> None:
     </body></html>
     """
     response.raise_for_status.return_value = None
-    session = Mock()
+    session = MagicMock()
     session.get.return_value = response
 
     verified = verify_article(_article(), session=session)
@@ -49,12 +52,12 @@ def test_verify_article_marks_matching_html_verified() -> None:
 
 
 def test_verify_article_rejects_unresolved_google_news_page() -> None:
-    response = Mock()
+    response = MagicMock()
     response.url = "https://news.google.com/rss/articles/abc"
     response.headers = {"content-type": "text/html"}
     response.text = "<html><body>Google News</body></html>"
     response.raise_for_status.return_value = None
-    session = Mock()
+    session = MagicMock()
     session.get.return_value = response
 
     verified = verify_article(
@@ -64,7 +67,9 @@ def test_verify_article_rejects_unresolved_google_news_page() -> None:
     assert verified.verification_status == "unresolved"
 
 
-def test_verify_articles_balances_categories(monkeypatch) -> None:
+def test_verify_articles_balances_categories(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     articles = [_article(title=f"AI story {i}") for i in range(5)] + [
         _article(
             title=f"Market story {i}",
@@ -78,7 +83,10 @@ def test_verify_articles_balances_categories(monkeypatch) -> None:
 
     called: list[str] = []
 
-    def fake_verify(article, **_kwargs):
+    def fake_verify(
+        article: NewsArticle,
+        **_kwargs: object,
+    ) -> NewsArticle:
         called.append(article.title)
         article.verification_status = "verified"
         return article

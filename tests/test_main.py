@@ -4,15 +4,15 @@ from dataclasses import replace
 from unittest.mock import MagicMock, call, patch
 
 from app.main import main
-from app.settings import settings
+from app.settings import Settings, settings
 from tests.types import ArticleFactory
 
 
-def _settings_with_email_disabled():
+def _settings_with_email_disabled() -> Settings:
     return replace(settings, email_enabled=False)
 
 
-def _settings_with_email_enabled():
+def _settings_with_email_enabled() -> Settings:
     return replace(
         settings,
         email_enabled=True,

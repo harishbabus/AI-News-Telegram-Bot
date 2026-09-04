@@ -142,7 +142,7 @@ def test_remove_duplicates_preserves_order(
 
 
 def test_remove_duplicates_removes_obvious_syndicated_title_variant(
-    article_factory,
+    article_factory: ArticleFactory,
 ) -> None:
     from common.utils import remove_duplicates
 
