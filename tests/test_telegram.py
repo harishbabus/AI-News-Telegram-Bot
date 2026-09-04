@@ -80,3 +80,5 @@ def test_send_message_posts_correct_payload() -> None:
 
     assert kwargs["data"]["text"] == "Test Message"
     assert kwargs["data"]["chat_id"] == CHAT_ID
+    assert kwargs["data"]["parse_mode"] == "HTML"
+    assert kwargs["data"]["disable_web_page_preview"] is True

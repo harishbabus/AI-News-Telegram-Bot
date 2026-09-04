@@ -1,219 +1,149 @@
-"""
-Unit tests for app.main.
-"""
+"""Unit tests for app.main."""
 
+from dataclasses import replace
 from unittest.mock import MagicMock, call, patch
 
 from app.main import main
+from app.settings import settings
 from tests.types import ArticleFactory
 
 
-def test_main_happy_path(
-    article_factory: ArticleFactory,
-) -> None:
-    """
-    Executes the complete workflow successfully.
-    """
-    article = article_factory()
-    mock_provider = MagicMock()
+def _settings_with_email_disabled():
+    return replace(settings, email_enabled=False)
 
-    with (
-        patch("app.main.get_latest_news", return_value=[article]),
-        patch("app.main.remove_duplicates", return_value=[article]),
-        patch("app.main.create_digest", return_value="Digest"),
-        patch(
-            "app.main.ProviderFactory.get_provider",
-            return_value=mock_provider,
-        ),
-        patch(
-            "app.main.summarize_news",
-            return_value="Summary",
-        ),
-        patch(
-            "app.main.split_message",
-            return_value=[
-                "Digest Part 1",
-                "Digest Part 2",
-            ],
-        ),
-        patch("app.main.send_message") as mock_send,
-        patch("app.main.logger.info"),
-    ):
-        main()
 
-    mock_send.assert_has_calls(
-        [
-            call("Summary"),
-            call("Digest Part 1"),
-            call("Digest Part 2"),
-        ]
+def _settings_with_email_enabled():
+    return replace(
+        settings,
+        email_enabled=True,
+        email_from="from@example.com",
+        email_to="to@example.com",
+        email_app_password="secret",
     )
 
-    assert mock_send.call_count == 3
 
+def test_main_single_fetch_reuses_ai_for_telegram_and_email(
+    article_factory: ArticleFactory,
+) -> None:
+    ai_article = article_factory(title="AI Telegram Story")
+    market_article = article_factory(
+        source="Business & Markets News",
+        title="Market Story",
+        category="Business & Markets",
+    )
+    all_news = [ai_article, market_article]
 
-def test_main_no_news() -> None:
-    """
-    Stops execution when no news articles are retrieved.
-    """
     with (
-        patch("app.main.get_latest_news", return_value=[]),
-        patch("app.main.logger.warning") as mock_warning,
+        patch("app.main.settings", _settings_with_email_enabled()),
+        patch("app.main.get_latest_news", return_value=all_news) as mock_all_fetch,
+        patch("app.main.get_latest_ai_news") as mock_ai_fetch,
+        patch("app.main.remove_duplicates", return_value=all_news),
+        patch("app.main.verify_articles", return_value=all_news) as mock_verify,
+        patch("app.main.ProviderFactory.get_provider", return_value=MagicMock()),
+        patch("app.main.summarize_news", return_value="Editorial AI Digest") as mock_summary,
+        patch("app.main.format_telegram_editorial_digest", return_value="Formatted AI Digest"),
+        patch("app.main.split_message", return_value=["Formatted AI Digest"]),
+        patch("app.main.generate_daily_briefing", return_value="New Daily Briefing") as mock_brief,
+        patch("app.main.format_daily_briefing_html", return_value="<html>Briefing</html>"),
         patch("app.main.send_message") as mock_send,
+        patch("app.main.send_email", return_value=True) as mock_email,
     ):
         main()
 
-    mock_warning.assert_called_once_with("No news articles were retrieved.")
+    mock_all_fetch.assert_called_once_with()
+    mock_ai_fetch.assert_not_called()
+    mock_verify.assert_called_once_with(all_news)
+    mock_summary.assert_called_once()
+    assert mock_summary.call_args.args[0] == [ai_article]
+    mock_brief.assert_called_once_with(all_news, mock_brief.call_args.args[1])
+    mock_send.assert_called_once_with("Formatted AI Digest")
+    mock_email.assert_called_once()
+
+
+def test_main_email_disabled_fetches_ai_only(article_factory: ArticleFactory) -> None:
+    article = article_factory()
+
+    with (
+        patch("app.main.settings", _settings_with_email_disabled()),
+        patch("app.main.get_latest_ai_news", return_value=[article]) as mock_ai_fetch,
+        patch("app.main.get_latest_news") as mock_all_fetch,
+        patch("app.main.remove_duplicates", return_value=[article]),
+        patch("app.main.verify_articles", return_value=[article]),
+        patch("app.main.ProviderFactory.get_provider", return_value=MagicMock()),
+        patch("app.main.summarize_news", return_value="Digest"),
+        patch("app.main.format_telegram_editorial_digest", return_value="Digest"),
+        patch("app.main.split_message", return_value=["Digest"]),
+        patch("app.main.send_message") as mock_send,
+        patch("app.main.send_email") as mock_email,
+    ):
+        main()
+
+    mock_ai_fetch.assert_called_once_with()
+    mock_all_fetch.assert_not_called()
+    mock_send.assert_called_once_with("Digest")
+    mock_email.assert_not_called()
+
+
+def test_main_no_ai_news_still_sends_email_briefing(
+    article_factory: ArticleFactory,
+) -> None:
+    market = article_factory(category="Business & Markets")
+
+    with (
+        patch("app.main.settings", _settings_with_email_enabled()),
+        patch("app.main.get_latest_news", return_value=[market]),
+        patch("app.main.remove_duplicates", return_value=[market]),
+        patch("app.main.verify_articles", return_value=[market]),
+        patch("app.main.ProviderFactory.get_provider", return_value=MagicMock()),
+        patch("app.main.generate_daily_briefing", return_value="Briefing"),
+        patch("app.main.format_daily_briefing_html", return_value="<html>Briefing</html>"),
+        patch("app.main.send_message") as mock_send,
+        patch("app.main.send_email", return_value=True) as mock_email,
+    ):
+        main()
 
     mock_send.assert_not_called()
+    mock_email.assert_called_once()
 
 
-def test_main_removes_duplicates(
-    article_factory: ArticleFactory,
-) -> None:
-    """
-    Removes duplicate news before generating the digest.
-    """
-    article = article_factory()
-    mock_provider = MagicMock()
-
+def test_main_no_news_does_not_send_anything() -> None:
     with (
-        patch("app.main.get_latest_news", return_value=[article]),
-        patch(
-            "app.main.remove_duplicates",
-            return_value=[article],
-        ) as mock_remove,
-        patch("app.main.create_digest", return_value="Digest"),
-        patch(
-            "app.main.ProviderFactory.get_provider",
-            return_value=mock_provider,
-        ),
-        patch(
-            "app.main.summarize_news",
-            return_value="Summary",
-        ),
-        patch("app.main.split_message", return_value=[]),
-        patch("app.main.send_message"),
+        patch("app.main.settings", _settings_with_email_enabled()),
+        patch("app.main.get_latest_news", return_value=[]),
+        patch("app.main.remove_duplicates", return_value=[]),
+        patch("app.main.verify_articles", return_value=[]),
+        patch("app.main.ProviderFactory.get_provider", return_value=MagicMock()),
+        patch("app.main.send_message") as mock_send,
+        patch("app.main.send_email") as mock_email,
     ):
         main()
 
-    mock_remove.assert_called_once_with([article])
+    mock_send.assert_not_called()
+    mock_email.assert_not_called()
 
 
-def test_main_calls_create_digest(
-    article_factory: ArticleFactory,
-) -> None:
-    """
-    Creates the Telegram digest.
-    """
+def test_main_splits_multiple_telegram_messages(article_factory: ArticleFactory) -> None:
     article = article_factory()
-    mock_provider = MagicMock()
 
     with (
-        patch("app.main.get_latest_news", return_value=[article]),
+        patch("app.main.settings", _settings_with_email_disabled()),
+        patch("app.main.get_latest_ai_news", return_value=[article]),
         patch("app.main.remove_duplicates", return_value=[article]),
-        patch(
-            "app.main.create_digest",
-            return_value="Digest",
-        ) as mock_digest,
-        patch(
-            "app.main.ProviderFactory.get_provider",
-            return_value=mock_provider,
-        ),
-        patch(
-            "app.main.summarize_news",
-            return_value="Summary",
-        ),
-        patch("app.main.split_message", return_value=[]),
-        patch("app.main.send_message"),
-    ):
-        main()
-
-    mock_digest.assert_called_once_with([article])
-
-
-def test_main_calls_summarizer(
-    article_factory: ArticleFactory,
-) -> None:
-    """
-    Generates the AI summary.
-    """
-    article = article_factory()
-    mock_provider = MagicMock()
-
-    with (
-        patch("app.main.get_latest_news", return_value=[article]),
-        patch("app.main.remove_duplicates", return_value=[article]),
-        patch("app.main.create_digest", return_value="Digest"),
-        patch(
-            "app.main.ProviderFactory.get_provider",
-            return_value=mock_provider,
-        ),
-        patch(
-            "app.main.summarize_news",
-            return_value="Summary",
-        ) as mock_summary,
-        patch("app.main.split_message", return_value=[]),
-        patch("app.main.send_message"),
-    ):
-        main()
-
-    mock_summary.assert_called_once_with(
-        [article],
-        mock_provider,
-    )
-
-
-def test_main_sends_all_messages(
-    article_factory: ArticleFactory,
-) -> None:
-    """
-    Sends the summary followed by all digest parts.
-    """
-    article = article_factory()
-    mock_provider = MagicMock()
-
-    with (
-        patch("app.main.get_latest_news", return_value=[article]),
-        patch("app.main.remove_duplicates", return_value=[article]),
-        patch("app.main.create_digest", return_value="Digest"),
-        patch(
-            "app.main.ProviderFactory.get_provider",
-            return_value=mock_provider,
-        ),
-        patch(
-            "app.main.summarize_news",
-            return_value="Summary",
-        ),
-        patch(
-            "app.main.split_message",
-            return_value=[
-                "Part 1",
-                "Part 2",
-            ],
-        ),
+        patch("app.main.verify_articles", return_value=[article]),
+        patch("app.main.ProviderFactory.get_provider", return_value=MagicMock()),
+        patch("app.main.summarize_news", return_value="Digest"),
+        patch("app.main.format_telegram_editorial_digest", return_value="Digest"),
+        patch("app.main.split_message", return_value=["Part 1", "Part 2"]),
         patch("app.main.send_message") as mock_send,
     ):
         main()
 
-    mock_send.assert_has_calls(
-        [
-            call("Summary"),
-            call("Part 1"),
-            call("Part 2"),
-        ]
-    )
+    mock_send.assert_has_calls([call("Part 1"), call("Part 2")])
 
 
 def test_main_handles_unexpected_exception() -> None:
-    """
-    Logs unexpected exceptions.
-    """
     with (
-        patch(
-            "app.main.get_latest_news",
-            side_effect=RuntimeError("Boom"),
-        ),
+        patch("app.main.ProviderFactory.get_provider", side_effect=RuntimeError("Boom")),
         patch("app.main.logger.exception") as mock_exception,
     ):
         main()

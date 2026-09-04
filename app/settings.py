@@ -24,6 +24,14 @@ class Settings:
     gemini_api_key: str
     supported_providers: set[str]
 
+    # Email
+    email_enabled: bool
+    email_smtp_host: str
+    email_smtp_port: int
+    email_from: str
+    email_to: str
+    email_app_password: str
+
 
 def _load_settings() -> Settings:
     bot_token = os.getenv("BOT_TOKEN")
@@ -33,6 +41,20 @@ def _load_settings() -> Settings:
     openai_api_key = os.getenv("OPENAI_API_KEY", "")
     gemini_api_key = os.getenv("GEMINI_API_KEY", "")
 
+    email_enabled = os.getenv("EMAIL_ENABLED", "false").lower() == "true"
+    email_smtp_host = os.getenv("EMAIL_SMTP_HOST", "smtp.gmail.com")
+    email_smtp_port = int(os.getenv("EMAIL_SMTP_PORT", "587"))
+    email_from = os.getenv("EMAIL_FROM", "")
+    email_to = os.getenv("EMAIL_TO", "")
+    email_app_password = os.getenv("EMAIL_APP_PASSWORD", "")
+
+    if email_enabled:
+        if not email_from or not email_to or not email_app_password:
+            raise ValueError(
+                "EMAIL_FROM, EMAIL_TO and EMAIL_APP_PASSWORD "
+                "must be configured when EMAIL_ENABLED=true."
+            )
+        
     if not bot_token or not chat_id:
         raise ValueError("BOT_TOKEN and CHAT_ID must be configured.")
 
@@ -55,6 +77,12 @@ def _load_settings() -> Settings:
         openai_api_key=openai_api_key,
         gemini_api_key=gemini_api_key,
         supported_providers=SUPPORTED_PROVIDERS,
+        email_enabled=email_enabled,
+        email_smtp_host=email_smtp_host,
+        email_smtp_port=email_smtp_port,
+        email_from=email_from,
+        email_to=email_to,
+        email_app_password=email_app_password,
     )
 
 

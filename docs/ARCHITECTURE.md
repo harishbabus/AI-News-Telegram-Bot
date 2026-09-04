@@ -627,3 +627,20 @@ This design allows new AI providers, news sources, messaging platforms, and depl
 - DEVELOPMENT.md — Local development and contribution guide
 - DEPLOYMENT.md — Oracle Cloud deployment instructions
 - CI_CD.md — Deployment automation pipeline
+## v6 news-quality curation
+
+The delivery format introduced in v5 is intentionally unchanged. v6 tightens the
+candidate set before either LLM prompt is generated:
+
+- category-specific freshness windows reject stale dated stories;
+- implausibly future-dated entries are rejected;
+- primary sources are explicitly tagged and preferred;
+- Google News is used as discovery transport for selected categories, while known
+  publishers such as Reuters, TechCrunch, TM Forum and Light Reading are upgraded
+  to `established` evidence;
+- discovery-only extraordinary claims are excluded by prompt policy unless the
+  supplied candidate set also contains primary or established support;
+- obvious syndicated-title duplicates are removed before summarisation;
+- the Python Insider feed uses its current official `/rss.xml` endpoint;
+- parser content-type warnings no longer discard a feed when usable entries were
+  successfully parsed.

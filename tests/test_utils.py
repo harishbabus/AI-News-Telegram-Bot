@@ -139,3 +139,19 @@ def test_remove_duplicates_preserves_order(
 
     # Assert
     assert result == [article1, article2]
+
+
+def test_remove_duplicates_removes_obvious_syndicated_title_variant(
+    article_factory,
+) -> None:
+    from common.utils import remove_duplicates
+
+    first = article_factory(
+        title="OpenAI launches new enterprise agent platform"
+    )
+    second = article_factory(
+        source="AI Industry News",
+        title="OpenAI launches new enterprise agent platform - Reuters",
+    )
+
+    assert remove_duplicates([first, second]) == [first]

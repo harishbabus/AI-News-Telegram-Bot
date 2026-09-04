@@ -16,7 +16,7 @@ class GeminiProvider(AIProvider):
     def __init__(self) -> None:
         self.client = genai.Client(api_key=GEMINI_API_KEY)
 
-    def summarize(self, news: NewsList) -> str:
+    def summarize(self, news: NewsList, prompt: str | None = None) -> str:
         """
         Generates a summary of the supplied news articles using Gemini.
 
@@ -28,7 +28,7 @@ class GeminiProvider(AIProvider):
         """
         logger.info("Generating summary using Gemini.")
 
-        prompt = build_news_prompt(news)
+        prompt = prompt or build_news_prompt(news)
 
         try:
             response = self.client.models.generate_content(

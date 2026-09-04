@@ -1,27 +1,36 @@
 from openai import OpenAI
 
 from app.config import OPENAI_API_KEY
+from common.constants import OPENAI_MODEL
+from common.logger import logger
 from common.models import NewsList
+from prompts.news_summary_prompt import build_news_prompt
 from providers.base_provider import AIProvider
 
 
 class OpenAIProvider(AIProvider):
-    """
-    AI provider implementation using OpenAI models.
-    """
+    """AI provider implementation using OpenAI models."""
 
     def __init__(self) -> None:
         self.client = OpenAI(api_key=OPENAI_API_KEY)
 
-    def summarize(self, news: NewsList) -> str:
-        """
-        Generates a summary of the supplied news articles using the Gemini API.
+    def summarize(self, news: NewsList, prompt: str | None = None) -> str:
+        """Generate the briefing from the supplied news articles."""
+        logger.info("Generating briefing using OpenAI.")
+        prompt = prompt or build_news_prompt(news)
 
-        Args:
-            news: List of news article dictionaries.
+        try:
+            response = self.client.responses.create(
+                model=OPENAI_MODEL,
+                input=prompt,
+            )
 
-        Returns:
-            A summarized string of the news articles.
-        """
+            text = response.output_text
+            if not text:
+                raise RuntimeError("OpenAI returned an empty response.")
 
-        return "OpenAI Summary (coming next)"
+            logger.info("OpenAI briefing generated successfully.")
+            return text
+        except Exception:
+            logger.exception("OpenAI briefing generation failed.")
+            raise
