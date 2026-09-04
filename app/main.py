@@ -77,9 +77,13 @@ def _collect_and_verify_news() -> tuple[NewsList, NewsList]:
     """Fetch once when email is enabled and reuse AI items for Telegram."""
     if settings.email_enabled:
         all_news = remove_duplicates(get_latest_news())
-        logger.info("%d unique briefing candidates after freshness filtering.", len(all_news))
+        logger.info(
+            "%d unique briefing candidates after freshness filtering.", len(all_news)
+        )
         verified_news = verify_articles(all_news)
-        ai_news = [article for article in verified_news if article.category == CATEGORY_AI]
+        ai_news = [
+            article for article in verified_news if article.category == CATEGORY_AI
+        ]
         return ai_news, verified_news
 
     ai_news = remove_duplicates(get_latest_ai_news())

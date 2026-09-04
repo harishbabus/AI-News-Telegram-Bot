@@ -89,9 +89,7 @@ def _title_overlap(feed_title: str, page_title: str) -> float:
 
 def _page_title(parser: _ArticleHTMLParser) -> str:
     return _normalise(
-        parser.meta.get("og:title")
-        or parser.meta.get("twitter:title")
-        or parser.title
+        parser.meta.get("og:title") or parser.meta.get("twitter:title") or parser.title
     )
 
 
@@ -137,8 +135,7 @@ def verify_article(
     requester = session or requests.Session()
     headers = {
         "User-Agent": (
-            "Mozilla/5.0 (compatible; AI-News-Briefing/1.0; "
-            "+https://github.com/)"
+            "Mozilla/5.0 (compatible; AI-News-Briefing/1.0; " "+https://github.com/)"
         )
     }
 
@@ -181,7 +178,9 @@ def verify_article(
             return replace(
                 article,
                 verification_status="failed",
-                verification_reason="Publisher page contained too little readable content.",
+                verification_reason=(
+                    "Publisher page contained too little readable content."
+                ),
                 verified_url=final_url,
                 content_excerpt=excerpt,
                 content_date=_page_date(parser),
@@ -191,7 +190,9 @@ def verify_article(
             return replace(
                 article,
                 verification_status="partial",
-                verification_reason="Publisher page title only partially matched feed title.",
+                verification_reason=(
+                    "Publisher page title only partially matched feed title."
+                ),
                 verified_url=final_url,
                 content_excerpt=excerpt,
                 content_date=_page_date(parser),
@@ -210,10 +211,16 @@ def verify_article(
         return replace(
             article,
             verification_status="failed",
-            verification_reason=f"Publisher page could not be fetched: {type(exc).__name__}.",
+            verification_reason=(
+                f"Publisher page could not be fetched: " f"{type(exc).__name__}."
+            ),
         )
-    except Exception as exc:  # defensive: malformed publisher HTML must not stop the bot
-        logger.warning("Article verification failed unexpectedly for %s: %s", article.link, exc)
+    except (
+        Exception
+    ) as exc:  # defensive: malformed publisher HTML must not stop the bot
+        logger.warning(
+            "Article verification failed unexpectedly for %s: %s", article.link, exc
+        )
         return replace(
             article,
             verification_status="failed",
@@ -223,7 +230,10 @@ def verify_article(
 
 def _verification_priority(article: NewsArticle) -> tuple[int, int]:
     quality_rank = {"primary": 0, "established": 1, "discovery": 2}
-    return (quality_rank.get(article.source_quality, 3), 0 if article.published_at else 1)
+    return (
+        quality_rank.get(article.source_quality, 3),
+        0 if article.published_at else 1,
+    )
 
 
 def verify_articles(
@@ -279,7 +289,8 @@ def verify_articles(
             failed += 1
 
     logger.info(
-        "Article verification complete: %d verified, %d partial, %d unresolved, %d failed.",
+        "Article verification complete: %d verified, %d partial, "
+        "%d unresolved, %d failed.",
         verified,
         partial,
         unresolved,

@@ -40,11 +40,20 @@ def test_main_single_fetch_reuses_ai_for_telegram_and_email(
         patch("app.main.remove_duplicates", return_value=all_news),
         patch("app.main.verify_articles", return_value=all_news) as mock_verify,
         patch("app.main.ProviderFactory.get_provider", return_value=MagicMock()),
-        patch("app.main.summarize_news", return_value="Editorial AI Digest") as mock_summary,
-        patch("app.main.format_telegram_editorial_digest", return_value="Formatted AI Digest"),
+        patch(
+            "app.main.summarize_news", return_value="Editorial AI Digest"
+        ) as mock_summary,
+        patch(
+            "app.main.format_telegram_editorial_digest",
+            return_value="Formatted AI Digest",
+        ),
         patch("app.main.split_message", return_value=["Formatted AI Digest"]),
-        patch("app.main.generate_daily_briefing", return_value="New Daily Briefing") as mock_brief,
-        patch("app.main.format_daily_briefing_html", return_value="<html>Briefing</html>"),
+        patch(
+            "app.main.generate_daily_briefing", return_value="New Daily Briefing"
+        ) as mock_brief,
+        patch(
+            "app.main.format_daily_briefing_html", return_value="<html>Briefing</html>"
+        ),
         patch("app.main.send_message") as mock_send,
         patch("app.main.send_email", return_value=True) as mock_email,
     ):
@@ -96,7 +105,9 @@ def test_main_no_ai_news_still_sends_email_briefing(
         patch("app.main.verify_articles", return_value=[market]),
         patch("app.main.ProviderFactory.get_provider", return_value=MagicMock()),
         patch("app.main.generate_daily_briefing", return_value="Briefing"),
-        patch("app.main.format_daily_briefing_html", return_value="<html>Briefing</html>"),
+        patch(
+            "app.main.format_daily_briefing_html", return_value="<html>Briefing</html>"
+        ),
         patch("app.main.send_message") as mock_send,
         patch("app.main.send_email", return_value=True) as mock_email,
     ):
@@ -122,7 +133,9 @@ def test_main_no_news_does_not_send_anything() -> None:
     mock_email.assert_not_called()
 
 
-def test_main_splits_multiple_telegram_messages(article_factory: ArticleFactory) -> None:
+def test_main_splits_multiple_telegram_messages(
+    article_factory: ArticleFactory,
+) -> None:
     article = article_factory()
 
     with (
@@ -143,7 +156,9 @@ def test_main_splits_multiple_telegram_messages(article_factory: ArticleFactory)
 
 def test_main_handles_unexpected_exception() -> None:
     with (
-        patch("app.main.ProviderFactory.get_provider", side_effect=RuntimeError("Boom")),
+        patch(
+            "app.main.ProviderFactory.get_provider", side_effect=RuntimeError("Boom")
+        ),
         patch("app.main.logger.exception") as mock_exception,
     ):
         main()

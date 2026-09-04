@@ -54,7 +54,7 @@ def _load_settings() -> Settings:
                 "EMAIL_FROM, EMAIL_TO and EMAIL_APP_PASSWORD "
                 "must be configured when EMAIL_ENABLED=true."
             )
-        
+
     if not bot_token or not chat_id:
         raise ValueError("BOT_TOKEN and CHAT_ID must be configured.")
 

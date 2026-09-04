@@ -1,7 +1,7 @@
 import re
 from difflib import SequenceMatcher
 
-from common.models import NewsArticle, NewsList
+from common.models import NewsList
 
 _NON_ALNUM_RE = re.compile(r"[^a-z0-9 ]+")
 _MULTI_SPACE_RE = re.compile(r"\s+")

@@ -2,7 +2,9 @@ from prompts.telegram_summary_prompt import build_telegram_summary_prompt
 from tests.types import ArticleFactory
 
 
-def test_telegram_prompt_has_editorial_sections(article_factory: ArticleFactory) -> None:
+def test_telegram_prompt_has_editorial_sections(
+    article_factory: ArticleFactory,
+) -> None:
     prompt = build_telegram_summary_prompt([article_factory()])
     assert "🔥 TOP STORIES" in prompt
     assert "🛠️ NEW AI TOOLS" in prompt

@@ -2,6 +2,7 @@ from common.logger import logger
 from common.models import NewsList
 from prompts.telegram_summary_prompt import build_telegram_summary_prompt
 from providers.base_provider import AIProvider
+from services.fallback_renderer import build_telegram_fallback
 
 
 def summarize_news(news: NewsList, provider: AIProvider) -> str:
@@ -24,5 +25,7 @@ def summarize_news(news: NewsList, provider: AIProvider) -> str:
         logger.info("Telegram AI digest summarization completed.")
         return summary
     except Exception:
-        logger.exception("News summarization failed.")
-        return "Unable to generate AI summary."
+        logger.exception(
+            "News summarization failed; using deterministic Telegram fallback."
+        )
+        return build_telegram_fallback(news)

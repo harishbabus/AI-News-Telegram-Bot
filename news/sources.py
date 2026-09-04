@@ -30,8 +30,7 @@ TRUSTED_PUBLISHER_HINTS: tuple[str, ...] = (
 def _google_news_rss(query: str) -> str:
     encoded = quote_plus(query)
     return (
-        "https://news.google.com/rss/search?"
-        f"q={encoded}&hl=en-IN&gl=IN&ceid=IN:en"
+        "https://news.google.com/rss/search?" f"q={encoded}&hl=en-IN&gl=IN&ceid=IN:en"
     )
 
 
@@ -39,7 +38,7 @@ def _google_news_rss(query: str) -> str:
 # Anthropic does not currently expose a working RSS endpoint at /news/rss.xml,
 # so Google News is used only as a transport for pages from anthropic.com/news.
 AI_RSS_SOURCES: dict[str, str] = {
-    "Anthropic": _google_news_rss('site:anthropic.com/news Anthropic when:7d'),
+    "Anthropic": _google_news_rss("site:anthropic.com/news Anthropic when:7d"),
     "Google AI": "https://blog.google/technology/ai/rss/",
     "OpenAI": "https://openai.com/news/rss.xml",
     "AI Industry News": _google_news_rss(
@@ -53,14 +52,13 @@ AI_RSS_SOURCES: dict[str, str] = {
 # and supplement, rather than replace, primary/official sources.
 BRIEFING_RSS_SOURCES: dict[str, str] = {
     # AI & LLMs
-    "Anthropic": _google_news_rss('site:anthropic.com/news Anthropic when:7d'),
+    "Anthropic": _google_news_rss("site:anthropic.com/news Anthropic when:7d"),
     "Google AI": "https://blog.google/technology/ai/rss/",
     "OpenAI": "https://openai.com/news/rss.xml",
     "AI Industry News": _google_news_rss(
         '(AI OR "large language model" OR LLM) '
         '(Reuters OR TechCrunch OR "MIT Technology Review" OR Ars) when:2d'
     ),
-
     # Python & software development
     "Python Insider": "https://blog.python.org/rss.xml",
     "GitHub Blog": "https://github.blog/feed/",
@@ -68,7 +66,6 @@ BRIEFING_RSS_SOURCES: dict[str, str] = {
         '(Python OR GitHub OR "software development" OR "developer tools") '
         '(InfoQ OR "The New Stack" OR Ars OR TechCrunch) when:3d'
     ),
-
     # Telecom / BSS
     "Telecom & BSS News": _google_news_rss(
         '(telecom OR telco OR "TM Forum" OR BSS OR OSS OR charging OR billing '
@@ -76,11 +73,10 @@ BRIEFING_RSS_SOURCES: dict[str, str] = {
         '("TM Forum" OR "Light Reading" OR "Mobile World Live" OR Reuters '
         'OR "RCR Wireless") when:4d'
     ),
-
     # Business & markets
     "Business & Markets News": _google_news_rss(
-        '(business OR markets OR economy OR earnings OR RBI OR Sensex OR Nifty '
-        'OR rupee OR rates) (Reuters OR CNBC OR Moneycontrol) when:2d'
+        "(business OR markets OR economy OR earnings OR RBI OR Sensex OR Nifty "
+        "OR rupee OR rates) (Reuters OR CNBC OR Moneycontrol) when:2d"
     ),
 }
 

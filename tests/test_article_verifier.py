@@ -1,4 +1,3 @@
-from types import SimpleNamespace
 from unittest.mock import Mock
 
 from common.models import NewsArticle
@@ -58,15 +57,15 @@ def test_verify_article_rejects_unresolved_google_news_page() -> None:
     session = Mock()
     session.get.return_value = response
 
-    verified = verify_article(_article(link="https://news.google.com/x"), session=session)
+    verified = verify_article(
+        _article(link="https://news.google.com/x"), session=session
+    )
 
     assert verified.verification_status == "unresolved"
 
 
 def test_verify_articles_balances_categories(monkeypatch) -> None:
-    articles = [
-        _article(title=f"AI story {i}") for i in range(5)
-    ] + [
+    articles = [_article(title=f"AI story {i}") for i in range(5)] + [
         _article(
             title=f"Market story {i}",
             category="Business & Markets",

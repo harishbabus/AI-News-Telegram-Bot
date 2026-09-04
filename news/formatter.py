@@ -61,6 +61,7 @@ def create_digest(news: NewsList) -> str:
 
     return "\n\n".join(blocks)
 
+
 TELEGRAM_EDITORIAL_HEADINGS = {
     "🔥 TOP STORIES",
     "🛠️ NEW AI TOOLS",
@@ -76,7 +77,8 @@ def _fill_empty_editorial_sections(summary: str) -> str:
         "🛠️ NEW AI TOOLS": "No major tool release today.",
         "🔬 RESEARCH HIGHLIGHTS": "No major research highlight today.",
         "🎯 WHY TODAY'S NEWS MATTERS": (
-            "No strong cross-cutting signal could be established from today's verified items."
+            "No strong cross-cutting signal could be established "
+            "from today's verified items."
         ),
     }
     lines = summary.splitlines()

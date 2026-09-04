@@ -49,9 +49,7 @@ def format_daily_briefing_html(briefing: str, date_label: str) -> str:
             close_story()
             close_signal()
             in_signal = True
-            body.append(
-                '<div class="signal"><div class="eyebrow">TODAY’S SIGNAL</div>'
-            )
+            body.append('<div class="signal"><div class="eyebrow">TODAY’S SIGNAL</div>')
             continue
 
         if line in SECTION_HEADINGS:
@@ -71,7 +69,7 @@ def format_daily_briefing_html(briefing: str, date_label: str) -> str:
             body.append(
                 '<div class="story-heading">'
                 f'<span class="story-number">{escape(number.zfill(2))}</span>'
-                f'<h3>{escape(title)}</h3></div>'
+                f"<h3>{escape(title)}</h3></div>"
             )
             continue
 
@@ -97,7 +95,7 @@ def format_daily_briefing_html(briefing: str, date_label: str) -> str:
             text = line.removeprefix("Why it matters:").strip()
             body.append(
                 '<div class="why"><div class="why-label">WHY IT MATTERS</div>'
-                f'<div>{escape(text)}</div></div>'
+                f"<div>{escape(text)}</div></div>"
             )
             continue
 

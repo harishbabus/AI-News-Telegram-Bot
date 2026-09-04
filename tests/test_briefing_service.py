@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 
-from services.briefing_service import FALLBACK_MESSAGE, generate_daily_briefing
+from services.briefing_service import generate_daily_briefing
 from tests.types import ArticleFactory
 
 
@@ -23,4 +23,6 @@ def test_generate_daily_briefing_handles_provider_error(
 
     result = generate_daily_briefing([article_factory()], provider)
 
-    assert result == FALLBACK_MESSAGE
+    assert "📰 Daily Briefing" in result
+    assert "Gemini is temporarily unavailable" in result
+    assert "Sample Title" in result

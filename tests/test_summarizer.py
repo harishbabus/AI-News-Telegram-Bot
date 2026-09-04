@@ -51,7 +51,9 @@ def test_summarize_news_handles_provider_exception(
     provider.summarize.side_effect = RuntimeError("API failed")
 
     result = summarize_news([article], provider)
-    assert result == "Unable to generate AI summary."
+    assert "🔥 TOP STORIES" in result
+    assert article.title in result
+    assert "Gemini was temporarily unavailable" in result
 
 
 def test_summarize_news_logs_info(article_factory: ArticleFactory) -> None:

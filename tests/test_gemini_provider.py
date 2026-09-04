@@ -211,5 +211,52 @@ def test_summarize_logs_failure(
             provider.summarize([article])
 
     mock_logger.assert_called_once_with(
-        "Gemini summarization failed.",
+        "Gemini summarization failed after %d attempt(s).",
+        1,
     )
+
+
+def test_summarize_retries_transient_503(
+    article_factory: ArticleFactory,
+) -> None:
+    """Retries a transient Gemini 503 before succeeding."""
+
+    class TransientError(RuntimeError):
+        status_code = 503
+
+    response = MagicMock()
+    response.text = "Recovered summary"
+
+    with (
+        patch("providers.gemini_provider.genai.Client") as mock_client,
+        patch("providers.gemini_provider.build_news_prompt", return_value="Prompt"),
+        patch("providers.gemini_provider.time.sleep") as mock_sleep,
+    ):
+        mock_client.return_value.models.generate_content.side_effect = [
+            TransientError("503 UNAVAILABLE"),
+            response,
+        ]
+        provider = GeminiProvider()
+        result = provider.summarize([article_factory()])
+
+    assert result == "Recovered summary"
+    assert mock_client.return_value.models.generate_content.call_count == 2
+    mock_sleep.assert_called_once_with(2.0)
+
+
+def test_summarize_does_not_retry_non_transient_error(
+    article_factory: ArticleFactory,
+) -> None:
+    """Does not retry permanent/programming errors."""
+    with (
+        patch("providers.gemini_provider.genai.Client") as mock_client,
+        patch("providers.gemini_provider.build_news_prompt", return_value="Prompt"),
+        patch("providers.gemini_provider.time.sleep") as mock_sleep,
+    ):
+        mock_client.return_value.models.generate_content.side_effect = ValueError("bad")
+        provider = GeminiProvider()
+        with pytest.raises(ValueError):
+            provider.summarize([article_factory()])
+
+    assert mock_client.return_value.models.generate_content.call_count == 1
+    mock_sleep.assert_not_called()

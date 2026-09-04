@@ -1,7 +1,7 @@
 from common.logger import logger
 from common.models import NewsList
 from providers.base_provider import AIProvider
-
+from services.fallback_renderer import build_daily_briefing_fallback
 
 FALLBACK_MESSAGE = "Unable to generate the daily briefing."
 
@@ -26,5 +26,7 @@ def generate_daily_briefing(news: NewsList, provider: AIProvider) -> str:
         logger.info("Daily briefing generated successfully.")
         return briefing
     except Exception:
-        logger.exception("Daily briefing generation failed.")
-        return FALLBACK_MESSAGE
+        logger.exception(
+            "Daily briefing generation failed; using deterministic email fallback."
+        )
+        return build_daily_briefing_fallback(news)

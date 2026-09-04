@@ -146,9 +146,7 @@ def test_remove_duplicates_removes_obvious_syndicated_title_variant(
 ) -> None:
     from common.utils import remove_duplicates
 
-    first = article_factory(
-        title="OpenAI launches new enterprise agent platform"
-    )
+    first = article_factory(title="OpenAI launches new enterprise agent platform")
     second = article_factory(
         source="AI Industry News",
         title="OpenAI launches new enterprise agent platform - Reuters",
