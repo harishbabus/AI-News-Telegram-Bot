@@ -16,6 +16,7 @@ from providers.base_provider import AIProvider
 from providers.provider_factory import ProviderFactory
 from services.article_verifier import verify_articles
 from services.briefing_service import generate_daily_briefing
+from services.editorial_scoring import select_editorial_candidates
 from services.summarizer import summarize_news
 from telegram.bot import send_message
 
@@ -78,18 +79,39 @@ def _collect_and_verify_news() -> tuple[NewsList, NewsList]:
     if settings.email_enabled:
         all_news = remove_duplicates(get_latest_news())
         logger.info(
-            "%d unique briefing candidates after freshness filtering.", len(all_news)
+            "%d unique briefing candidates after freshness filtering.",
+            len(all_news),
         )
-        verified_news = verify_articles(all_news)
+        preselected = select_editorial_candidates(
+            all_news,
+            max_per_category=8,
+            max_per_publisher=3,
+        )
+        verified_news = verify_articles(preselected)
+        briefing_news = select_editorial_candidates(
+            verified_news,
+            max_per_category=6,
+            max_per_publisher=2,
+        )
         ai_news = [
-            article for article in verified_news if article.category == CATEGORY_AI
+            article for article in briefing_news if article.category == CATEGORY_AI
         ]
-        return ai_news, verified_news
+        return ai_news, briefing_news
 
     ai_news = remove_duplicates(get_latest_ai_news())
     logger.info("%d unique AI candidates after freshness filtering.", len(ai_news))
-    verified_ai_news = verify_articles(ai_news)
-    return verified_ai_news, []
+    preselected_ai = select_editorial_candidates(
+        ai_news,
+        max_per_category=10,
+        max_per_publisher=4,
+    )
+    verified_ai_news = verify_articles(preselected_ai)
+    selected_ai_news = select_editorial_candidates(
+        verified_ai_news,
+        max_per_category=8,
+        max_per_publisher=3,
+    )
+    return selected_ai_news, []
 
 
 def main() -> None:

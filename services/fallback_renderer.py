@@ -35,7 +35,7 @@ def _clean(text: str, limit: int = 360) -> str:
     return text[: limit - 1].rsplit(" ", 1)[0] + "…"
 
 
-def _quality_rank(article: NewsArticle) -> tuple[int, int]:
+def _quality_rank(article: NewsArticle) -> tuple[float, int, int]:
     verification = {
         "verified": 4,
         "partial": 3,
@@ -46,7 +46,7 @@ def _quality_rank(article: NewsArticle) -> tuple[int, int]:
     source = {"primary": 3, "established": 2, "discovery": 1}.get(
         article.source_quality, 1
     )
-    return verification, source
+    return article.editorial_score, verification, source
 
 
 def _ranked(news: NewsList) -> NewsList:
@@ -125,9 +125,9 @@ def build_daily_briefing_fallback(news: NewsList) -> str:
         "",
         "Today’s signal",
         (
-            "Gemini is temporarily unavailable. This fallback edition "
-            "presents the highest-quality fresh stories collected today "
-            "without AI-generated synthesis."
+            "Gemini is temporarily unavailable. This fallback edition presents the "
+            "highest-quality fresh stories collected today without "
+            "AI-generated synthesis."
         ),
     ]
 

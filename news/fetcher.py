@@ -7,7 +7,6 @@ from time import struct_time
 
 import feedparser
 
-from common.constants import DEFAULT_LIMIT_PER_SOURCE
 from common.logger import logger
 from common.models import NewsArticle, NewsList
 from news.sources import (
@@ -197,14 +196,14 @@ def _fetch_news(
 
 
 def get_latest_ai_news(
-    limit_per_source: int = DEFAULT_LIMIT_PER_SOURCE,
+    limit_per_source: int = 6,
 ) -> NewsList:
     """Fetch the curated AI-only candidates used for Telegram."""
     return _fetch_news(AI_RSS_SOURCES, limit_per_source)
 
 
 def get_latest_news(
-    limit_per_source: int = DEFAULT_LIMIT_PER_SOURCE,
+    limit_per_source: int = 8,
 ) -> NewsList:
     """Fetch the curated broader candidates used for the email briefing."""
     return _fetch_news(RSS_SOURCES, limit_per_source)

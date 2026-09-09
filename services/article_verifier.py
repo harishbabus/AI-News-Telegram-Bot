@@ -76,7 +76,7 @@ class _ArticleHTMLParser(HTMLParser):
 
 
 def _normalise(value: str | None) -> str:
-    return " ".join((value or "").casefold().split())
+    return _SPACE_RE.sub(" ", html.unescape(value or "")).strip()
 
 
 def _title_overlap(feed_title: str, page_title: str) -> float:
@@ -212,14 +212,14 @@ def verify_article(
             article,
             verification_status="failed",
             verification_reason=(
-                f"Publisher page could not be fetched: " f"{type(exc).__name__}."
+                "Publisher page could not be fetched: " f"{type(exc).__name__}."
             ),
         )
-    except (
-        Exception
-    ) as exc:  # defensive: malformed publisher HTML must not stop the bot
+    except Exception as exc:  # defensive: malformed HTML must not stop the bot
         logger.warning(
-            "Article verification failed unexpectedly for %s: %s", article.link, exc
+            "Article verification failed unexpectedly for %s: %s",
+            article.link,
+            exc,
         )
         return replace(
             article,
@@ -228,10 +228,11 @@ def verify_article(
         )
 
 
-def _verification_priority(article: NewsArticle) -> tuple[int, int]:
+def _verification_priority(article: NewsArticle) -> tuple[int, float, int]:
     quality_rank = {"primary": 0, "established": 1, "discovery": 2}
     return (
         quality_rank.get(article.source_quality, 3),
+        -article.editorial_score,
         0 if article.published_at else 1,
     )
 

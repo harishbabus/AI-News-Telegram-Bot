@@ -19,6 +19,7 @@ class NewsArticle:
     verified_url: str = ""
     content_excerpt: str = ""
     content_date: str = ""
+    editorial_score: float = 0.0
 
 
 NewsList = list[NewsArticle]
