@@ -1,9 +1,12 @@
+import re
+
 from common.logger import logger
 from common.models import NewsList
 from providers.base_provider import AIProvider
 from services.fallback_renderer import build_daily_briefing_fallback
 
 FALLBACK_MESSAGE = "Unable to generate the daily briefing."
+_MARKDOWN_BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
 
 
 def generate_daily_briefing(news: NewsList, provider: AIProvider) -> str:
@@ -23,6 +26,9 @@ def generate_daily_briefing(news: NewsList, provider: AIProvider) -> str:
         if not briefing:
             raise RuntimeError("AI provider returned an empty briefing.")
 
+        # The HTML renderer owns presentation. Remove occasional Markdown bold
+        # markers emitted by the model so email headlines never show literal **.
+        briefing = _MARKDOWN_BOLD_RE.sub(r"\1", briefing)
         logger.info("Daily briefing generated successfully.")
         return briefing
     except Exception:

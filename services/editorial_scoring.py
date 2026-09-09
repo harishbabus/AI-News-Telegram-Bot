@@ -232,15 +232,28 @@ _CATEGORY_ORDER = (
 )
 
 
+def _content_text(article: NewsArticle) -> str:
+    """Return article evidence only, excluding discovery-feed labels.
+
+    Source names such as ``Telecom Reuters`` must never make an unrelated story
+    look telecom-relevant. Category classification therefore uses only the title,
+    summary and verified publisher-page excerpt.
+    """
+    return " ".join(
+        part
+        for part in (article.title, article.summary, article.content_excerpt)
+        if part
+    ).casefold()
+
+
 def _text(article: NewsArticle) -> str:
+    """Return content plus publisher metadata for ranking bonuses/penalties."""
     return " ".join(
         part
         for part in (
-            article.title,
-            article.summary,
+            _content_text(article),
             article.publisher,
             article.source,
-            article.content_excerpt,
         )
         if part
     ).casefold()
@@ -285,7 +298,7 @@ def _publisher_bonus(article: NewsArticle) -> float:
 
 def is_category_relevant(article: NewsArticle) -> bool:
     """Return whether an article has enough evidence to belong to its category."""
-    text = _text(article)
+    text = _content_text(article)
     if any(term in text for term in _SPAM_TERMS):
         return False
 
@@ -330,6 +343,37 @@ def _publisher_key(article: NewsArticle) -> str:
     return (article.publisher or article.source or "unknown").casefold().strip()
 
 
+def _title_tokens(article: NewsArticle) -> set[str]:
+    return {
+        token for token in _WORD_RE.findall(article.title.casefold()) if len(token) >= 4
+    }
+
+
+def _requires_corroboration(article: NewsArticle) -> bool:
+    """Flag major claims from discovery-only publishers for corroboration."""
+    if article.source_quality != "discovery":
+        return False
+    title = article.title.casefold()
+    return any(term in title for term in _HIGH_SIGNAL_TERMS)
+
+
+def _is_corroborated(article: NewsArticle, articles: NewsList) -> bool:
+    """Return whether a stronger source independently covers the same headline."""
+    tokens = _title_tokens(article)
+    if len(tokens) < 3:
+        return False
+    for other in articles:
+        if other is article or other.source_quality == "discovery":
+            continue
+        if other.category != article.category:
+            continue
+        other_tokens = _title_tokens(other)
+        overlap = len(tokens & other_tokens) / len(tokens)
+        if overlap >= 0.35:
+            return True
+    return False
+
+
 def select_editorial_candidates(
     articles: NewsList,
     *,
@@ -342,13 +386,29 @@ def select_editorial_candidates(
         return []
 
     current = now or datetime.now(UTC)
-    relevant = [article for article in articles if is_category_relevant(article)]
-    rejected = len(articles) - len(relevant)
-    if rejected:
+    category_relevant = [
+        article for article in articles if is_category_relevant(article)
+    ]
+    relevance_rejected = len(articles) - len(category_relevant)
+    if relevance_rejected:
         logger.info(
             "Editorial relevance gate rejected %d of %d candidates.",
-            rejected,
+            relevance_rejected,
             len(articles),
+        )
+
+    relevant = [
+        article
+        for article in category_relevant
+        if not _requires_corroboration(article)
+        or _is_corroborated(article, category_relevant)
+    ]
+    credibility_rejected = len(category_relevant) - len(relevant)
+    if credibility_rejected:
+        logger.info(
+            "Editorial source-confidence gate rejected %d uncorroborated "
+            "discovery claims.",
+            credibility_rejected,
         )
 
     scored = [

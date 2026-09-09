@@ -11,7 +11,7 @@ import html
 import re
 from dataclasses import replace
 from html.parser import HTMLParser
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import requests
 
@@ -36,6 +36,7 @@ class _ArticleHTMLParser(HTMLParser):
         self._skip_depth = 0
         self.meta: dict[str, str] = {}
         self.text_parts: list[str] = []
+        self.links: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attributes = {key.casefold(): (value or "") for key, value in attrs}
@@ -45,6 +46,11 @@ class _ArticleHTMLParser(HTMLParser):
             self._in_title = True
         if lowered in {"script", "style", "noscript", "svg"}:
             self._skip_depth += 1
+
+        if lowered == "a":
+            href = attributes.get("href", "").strip()
+            if href:
+                self.links.append(href)
 
         if lowered == "meta":
             raw_key = (
@@ -125,6 +131,57 @@ def _is_google_news_url(url: str) -> bool:
     return host == "news.google.com" or host.endswith(".news.google.com")
 
 
+_GOOGLE_HOST_SUFFIXES = (
+    "google.com",
+    "googleusercontent.com",
+    "gstatic.com",
+    "youtube.com",
+)
+
+
+def _is_external_publisher_url(url: str) -> bool:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"}:
+        return False
+    host = (parsed.hostname or "").casefold()
+    return bool(host) and not any(
+        host == suffix or host.endswith(f".{suffix}")
+        for suffix in _GOOGLE_HOST_SUFFIXES
+    )
+
+
+def _google_news_publisher_candidates(html_text: str, base_url: str) -> list[str]:
+    """Extract likely publisher links exposed by a Google News landing page."""
+    parser = _ArticleHTMLParser()
+    parser.feed(html_text)
+    candidates: list[str] = []
+    seen: set[str] = set()
+    for href in parser.links:
+        absolute = urljoin(base_url, html.unescape(href))
+        if not _is_external_publisher_url(absolute) or absolute in seen:
+            continue
+        seen.add(absolute)
+        candidates.append(absolute)
+    return candidates[:8]
+
+
+def _fetch_response(
+    requester: requests.Session,
+    url: str,
+    *,
+    timeout: int,
+    headers: dict[str, str],
+) -> requests.Response:
+    response = requester.get(
+        url,
+        timeout=timeout,
+        headers=headers,
+        allow_redirects=True,
+    )
+    response.raise_for_status()
+    return response
+
+
 def verify_article(
     article: NewsArticle,
     *,
@@ -140,13 +197,9 @@ def verify_article(
     }
 
     try:
-        response = requester.get(
-            article.link,
-            timeout=timeout,
-            headers=headers,
-            allow_redirects=True,
+        response = _fetch_response(
+            requester, article.link, timeout=timeout, headers=headers
         )
-        response.raise_for_status()
 
         final_url = str(response.url)
         content_type = response.headers.get("content-type", "").casefold()
@@ -159,14 +212,45 @@ def verify_article(
             )
 
         if _is_google_news_url(final_url):
-            return replace(
-                article,
-                verification_status="unresolved",
-                verification_reason=(
-                    "Google News discovery link did not resolve to the publisher page."
-                ),
-                verified_url=final_url,
-            )
+            resolved_response: requests.Response | None = None
+            for candidate_url in _google_news_publisher_candidates(
+                response.text, final_url
+            ):
+                try:
+                    candidate = _fetch_response(
+                        requester,
+                        candidate_url,
+                        timeout=timeout,
+                        headers=headers,
+                    )
+                except requests.RequestException:
+                    continue
+                if _is_google_news_url(str(candidate.url)):
+                    continue
+                candidate_type = candidate.headers.get("content-type", "").casefold()
+                if "html" not in candidate_type:
+                    continue
+                candidate_parser = _ArticleHTMLParser()
+                candidate_parser.feed(candidate.text)
+                candidate_title = _page_title(candidate_parser)
+                if _title_overlap(article.title, candidate_title) >= 0.35:
+                    resolved_response = candidate
+                    break
+
+            if resolved_response is None:
+                return replace(
+                    article,
+                    verification_status="unresolved",
+                    verification_reason=(
+                        "Google News discovery link did not expose a matching "
+                        "publisher page."
+                    ),
+                    verified_url=final_url,
+                )
+
+            response = resolved_response
+            final_url = str(response.url)
+            logger.info("Resolved Google News article to publisher: %s", final_url)
 
         parser = _ArticleHTMLParser()
         parser.feed(response.text)
@@ -215,7 +299,7 @@ def verify_article(
                 "Publisher page could not be fetched: " f"{type(exc).__name__}."
             ),
         )
-    except Exception as exc:  # defensive: malformed HTML must not stop the bot
+    except Exception as exc:  # defensive guard for malformed publisher HTML
         logger.warning(
             "Article verification failed unexpectedly for %s: %s",
             article.link,

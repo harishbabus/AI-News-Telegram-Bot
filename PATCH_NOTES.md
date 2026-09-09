@@ -1,28 +1,21 @@
-# v8 Phase 1 patch
+# v8.2 hardening patch
 
-Apply these files on top of the locally cleaned v7.2 repository. Do not replace the whole repository with the earlier v8 ZIP.
+Apply over the current v8.1 working tree.
 
-Files changed for v8 Phase 1:
-- app/main.py
-- common/models.py
-- news/fetcher.py
-- news/sources.py
-- prompts/news_summary_prompt.py
-- services/article_verifier.py
-- services/editorial_scoring.py (new)
-- services/fallback_renderer.py
-- tests/test_editorial_scoring.py (new)
-- tests/test_main.py
+Changes:
+- category relevance uses article content only, never feed/source labels;
+- major claims from discovery-only publishers require corroboration from a stronger source;
+- Google News landing pages get a best-effort publisher-link resolution pass before being marked unresolved;
+- email briefing removes accidental Markdown `**` markers from Gemini output;
+- focused v8.2 regression tests added.
 
-After copying, run:
+Run after overlay:
 
     black .
     ruff check .
     mypy .
     pytest
 
-Then, only if all four pass:
+Then run:
 
     python -m app.main
-
-The most useful runtime logs are the candidate counts, editorial shortlist scores, article verification summary, and the final email content.
